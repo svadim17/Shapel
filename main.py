@@ -398,7 +398,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    qdarktheme.setup_theme(theme='dark')
+
+    colors = {'[dark]': {'primary': "#4CAF50",
+                       'background': "#212121",
+                       'foreground': "#E0E0E0",
+                       'input.background': "#2E2E2E",
+                       'border': "#424242"}}
+    qdarktheme.setup_theme(theme='dark', custom_colors=colors, additional_qss="QToolTip { "
+                                                                              "background-color: #ffff99;"
+                                                                              "color: #000000;"
+                                                                              "border: 1px solid #000000;"
+                                                                              "padding: 2px;}")
+
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec())
