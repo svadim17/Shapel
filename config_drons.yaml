@@ -1,0 +1,168 @@
+DJI_Mavic2_2_4:
+  name: Mavic2-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 255
+  - 163
+  - 72
+  frequency: 2400
+DJI_Mavic3_2_4:
+  name: Mavic3-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 198
+  - 70
+  - 0
+  frequency: 2400
+Autel_2_4:
+  name: Autel-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 129
+  - 61
+  - 156
+  frequency: 2400
+FPV_2_4:
+  name: FPV-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 0
+  - 255
+  - 12
+  frequency: 2400
+Xiaomi_2_4:
+  name: Xiaomi-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 26
+  - 95
+  - 180
+  frequency: 2400
+MavicMini_2_4:
+  name: MavicMini-2.4G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 245
+  - 194
+  - 17
+  frequency: 2400
+DJI_Mavic2_5_8:
+  name: Mavic2-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 237
+  - 51
+  - 59
+  frequency: 5800
+DJI_Mavic3_5_8:
+  name: Mavic3-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 165
+  - 29
+  - 45
+  frequency: 5800
+Autel_5_8:
+  name: Autel-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 220
+  - 138
+  - 221
+  frequency: 5800
+FPV_5_8:
+  name: FPV-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 38
+  - 162
+  - 105
+  frequency: 5800
+Xiaomi_5_8:
+  name: Xiaomi-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 255
+  - 255
+  - 255
+  frequency: 5800
+MavicMini_5_8:
+  name: MavicMini-5.8G
+  gains:
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  - 4
+  color:
+  - 98
+  - 160
+  - 234
+  frequency: 5800
