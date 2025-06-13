@@ -214,14 +214,15 @@ class RecordCalibration(QDockWidget, QWidget):
     def on_spinner_ready(self):
         self.logger.success("Spinner is ready, sending angle...")
         angle = str(self.spb_degree.value())
-        self.spinner.signal_set_angle.emit(angle)
+        QTimer.singleShot(200, lambda: self.spinner.signal_set_angle.emit(angle))
 
     def on_angle_set_done(self, success: bool):
         if success:
             QTimer.singleShot(1000, self.start_accumulation)
         else:
-            self.chb_autospin.setChecked(False)
             self.auto_record_status = False
+            self.save_status.setText('Failed to rotate spinner')
+            self.btn_record.setChecked(False)
 
     def start_accumulation(self):
         self.accum_status = True
@@ -300,7 +301,6 @@ class RecordCalibration(QDockWidget, QWidget):
                 if new_degree > 360:
                     self.auto_record_status = False
                     self.save_status.setText("Finished all degrees")
-                    self.chb_autospin.setChecked(False)
                     self.btn_record.setChecked(False)
                     self.logger.success(f'Finished to save all degrees!')
                     return

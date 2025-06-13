@@ -386,7 +386,7 @@ class TCPTread(QtCore.QThread):
         # print(f'FPV Data packet: {fpv_data}')
 
     def handle_fpvScope_data(self):
-        self.logger.info('Reading FPV Scope data.')
+        # self.logger.trace('Reading FPV Scope data.')
 
         data_length = int.from_bytes(self.recv_exact(2), 'little')
         all_freqs_data = self.recv_exact(data_length)
@@ -735,6 +735,10 @@ class SerialSpinTread(QtCore.QThread):
         self.signal_set_angle.connect(self.handle_angle)
 
     def handle_angle(self, angle: str):
+        if not self.running or not self.serial_port or not self.serial_port.is_open:
+            self.logger.error("Port not ready in handle_angle")
+            self.signal_spin_done.emit(False)
+            return
         result = self.send_new_angle(angle)
         if result == '01':
             self.logger.info("Angle set successfully.")
@@ -791,11 +795,14 @@ class SerialSpinTread(QtCore.QThread):
                 self.logger.info("Spinner serial port closed")
             except Exception as e:
                 self.logger.error(f"Error closing serial spinner port: {str(e)}")
+        else:
+            self.logger.info(f'Spinner port is not open')
         self.serial_port = None
 
     def run(self):
-        self.logger.trace("Spinner Thread started")
+        self.logger.info("Spinner Thread started")
         if not self.open_serial_port():
+            self.running = False
             return
         self.running = True
         self.signal_ready.emit()
@@ -809,6 +816,8 @@ class SerialSpinTread(QtCore.QThread):
             self.close_serial_port()
 
     def stop(self):
-        """Остановка потока"""
+        """ Остановка потока """
         self.running = False
         self.wait()
+        self.logger.info("Spinner Thread stopped")
+
