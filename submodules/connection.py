@@ -1,4 +1,7 @@
+import struct
 import threading
+import time
+from collections import deque
 import select
 import socket
 import json
@@ -12,6 +15,7 @@ from PyQt5 import QtCore
 from PyQt5.QtSerialPort import QSerialPortInfo
 from loguru import logger
 import yaml
+import ipaddress
 
 
 # Define constants for port settings
@@ -51,6 +55,9 @@ class TCPTread(QtCore.QThread):
     signal_threshold = QtCore.pyqtSignal(int)
     signal_calibration = QtCore.pyqtSignal(list)
     signal_drons_gains = QtCore.pyqtSignal(list)
+    signal_fpvScope_packet = QtCore.pyqtSignal(dict)
+    signal_fpvData_packet = QtCore.pyqtSignal(list)
+    signal_success_change_ip = QtCore.pyqtSignal(bool)
 
     def __init__(self, calibration_coeff: dict, frequencies, thread_timeout, logger_):
         QtCore.QThread.__init__(self)
@@ -126,6 +133,8 @@ class TCPTread(QtCore.QThread):
         self.client.send(command)
         self.msleep(100)
 
+
+
     def read_configs(self):
         with open('config_drons.yaml', encoding='utf-8') as file:
             self.conf_drons = dict(yaml.load(file, Loader=yaml.SafeLoader))
@@ -139,9 +148,6 @@ class TCPTread(QtCore.QThread):
     def stop_reading(self):
         self.run_flag = False
         self.client.close()
-
-    def start_reading(self, address):
-        pass
 
     def is_open(self):                  # check (open or not)
         pass
@@ -171,14 +177,78 @@ class TCPTread(QtCore.QThread):
     def set_timeout(self, value):           # timeout to wait data
         self.thread_timeout = value
 
-    def set_parity(self, value):            # setting the parity bit
-        pass
+    def unpack_frequencies(self, freq_numb, freq_samples):
+        if freq_numb in self.actual_numb_of_freq_drons:
+            self.logger.trace(f'freq_numb= {freq_numb}\nsamples= {freq_samples}')
+            self.frequencies_packet.update({freq_numb: freq_samples})
+        if len(self.frequencies_packet) == self.number_of_drons_on_low_freq + self.number_of_drons_on_high_freq:
+            self.signal_frequencies.emit(self.frequencies_packet)
+            # print(self.frequencies_packet)
 
-    def set_stopbits(self, value):          # setting a count of stop bits
-        pass
+    def unpack_data(self, type_of_packet: int, sector_number: int, data):
+        if type_of_packet == 1:
+            end_marker = b'\x5a\x5a\x5a\x5a'
+        elif type_of_packet == 3:
+            end_marker = b'\xa5\xa5\xa5\xa5\x5a\x5a\x5a\x5a'
+        else:
+            end_marker = b'\x5a\x5a\x5a\x5a'
 
-    def set_bytesize(self, value):          # setting the size of byte
-        pass
+        if (type_of_packet == 1) and (data[-len(end_marker):] == end_marker):
+            data = data[0:-len(end_marker)]       # data without end marker
+            signals_int = []
+            for i in range(len(data)//4):
+                signals_int.append(int.from_bytes(data[i*4: (i*4)+4], 'little'))
+
+            signals_int = self.signlas_levels_sort(signals_int)
+            packet = basic.Packet_levels(sector_number, signals_int)
+            if packet is not None:
+                self.signal_levels.emit(packet)
+
+        elif (type_of_packet == 3) and (data[-len(end_marker):] == end_marker):
+            data = data[0:-len(end_marker)]       # data without end marker
+            signals = np.frombuffer(data, np.float32)
+            self.signal_spectrum.emit({"antenna": sector_number, "values": signals / 1000})
+
+    def signlas_levels_sort(self, signals):
+        """ На вход функции приходит список signals из 48 элементов (16 значений низкой частоты дискретизации на 2,4ГГц,
+        16 значений низкой частоты дискретизации на 5,8ГГц, 8 значений высокой частоты дискретизации на 2,4ГГц,
+        8 начений высокой частоты дискретизации на 5,8ГГц). Функция отбрасывает все лишнее и создает список из 12 чисел
+        (6 дронов на 2,4ГГц и 6 дронов на 5,8ГГЦ). А значения разных частот дискретизации суммируются между
+        соответствующими дронами """
+
+        signals_low_freq = signals[:self.number_of_drons_on_low_freq] + signals[16:16+self.number_of_drons_on_low_freq]
+        signals_high_freq = signals[32:32+self.number_of_drons_on_high_freq] + signals[40:40+self.number_of_drons_on_high_freq]
+
+        # Суммирование low_freq со значениями high_freq в соответствии по дронам
+        signals_low_freq[2] += signals_high_freq[0]
+        signals_low_freq[3] += signals_high_freq[1]
+        new_signals = signals_low_freq
+        return new_signals
+
+    def collect_data_from_server(self, threshold, gains_list):
+        self.signal_threshold.emit(threshold)       # apply new threshold
+
+        # split gains list
+        splitted_gains_list = [gains_list[i:i + 6] for i in range(0, len(gains_list), 6)]
+
+        for i in range(self.number_of_drons):
+            # gains_list_to_send = self.conf_drons[list(self.conf_drons.keys())[0]]['name'] + splitted_gains_list[i]
+            splitted_gains_list[i].insert(0, self.conf_drons[list(self.conf_drons.keys())[i]]['name'])
+            self.signal_drons_gains.emit(splitted_gains_list[i])
+
+    def is_valid_new_ip(self, ip: str, port: str) -> bool:
+        ip_status, port_status = False, False
+        try:
+            ipaddress.IPv4Address(ip)
+            ip_status = True
+        except ValueError:
+            return False
+        if 49152 < int(port) < 65535:
+            port_status = True
+        else:
+            return False
+        if ip_status and port_status:
+            return True
 
     def send_new_freq_to_controller(self, new_freq: dict):
         try:
@@ -235,132 +305,160 @@ class TCPTread(QtCore.QThread):
         except Exception as e:
             self.logger.error(f'Error sending data: {str(e)}')
 
-    def unpack_frequencies(self, freq_numb, freq_samples):
-        if freq_numb in self.actual_numb_of_freq_drons:
-            self.logger.trace(f'freq_numb= {freq_numb}\nsamples= {freq_samples}')
-            self.frequencies_packet.update({freq_numb: freq_samples})
-        if len(self.frequencies_packet) == self.number_of_drons_on_low_freq + self.number_of_drons_on_high_freq:
-            self.signal_frequencies.emit(self.frequencies_packet)
-            # print(self.frequencies_packet)
+    def send_command_to_change_ip(self, new_ip: str, new_port: str):
+        self.logger.info(f'Changing IP address on {new_ip}:{new_port} ...')
+        if self.is_valid_new_ip(new_ip, new_port):
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\x10'
+            data_length = b'\x06'
+            ip_big_endian = socket.inet_aton(new_ip)
+            port = struct.pack('<H', int(new_port))
 
-    def unpack_data(self, type_of_packet: int, sector_number: int, data):
-        # print('type_of_packet= ', type_of_packet)
-        # print('sector_number= ', sector_number)
-        # print('data= ', data.hex(' '))
-        # for i in range(len(data) // 4):
-        #     print(' ', int.from_bytes(data[i * 4: (i * 4) + 4], 'little'))
-
-        if type_of_packet == 1:
-            end_marker = b'\x5a\x5a\x5a\x5a'
-        elif type_of_packet == 3:
-            end_marker = b'\xa5\xa5\xa5\xa5\x5a\x5a\x5a\x5a'
+            command = sender + receiver + code + data_length + ip_big_endian + port
+            self.client.send(command)
         else:
-            end_marker = b'\x5a\x5a\x5a\x5a'
+            self.logger.error(f'Invalid new IP address or port!')
 
-        if (type_of_packet == 1) and (data[-len(end_marker):] == end_marker):
-            data = data[0:-len(end_marker)]       # data without end marker
-            signals_int = []
-            for i in range(len(data)//4):
-                signals_int.append(int.from_bytes(data[i*4: (i*4)+4], 'little'))
-
-            signals_int = self.signlas_levels_sort(signals_int)
-            # print(signals_int)
-            packet = basic.Packet_levels(sector_number, signals_int)
-            if packet is not None:
-                self.signal_levels.emit(packet)
-
-        elif (type_of_packet == 3) and (data[-len(end_marker):] == end_marker):
-            data = data[0:-len(end_marker)]       # data without end marker
-            signals = np.frombuffer(data, np.float32)
-            self.signal_spectrum.emit({"antenna": sector_number, "values": signals / 1000})
-
-    def signlas_levels_sort(self, signals):
-        """ На вход функции приходит список signals из 48 элементов (16 значений низкой частоты дискретизации на 2,4ГГц,
-        16 значений низкой частоты дискретизации на 5,8ГГц, 8 значений высокой частоты дискретизации на 2,4ГГц,
-        8 начений высокой частоты дискретизации на 5,8ГГц). Функция отбрасывает все лишнее и создает список из 12 чисел
-        (6 дронов на 2,4ГГц и 6 дронов на 5,8ГГЦ). А значения разных частот дискретизации суммируются между
-        соответствующими дронами """
-
-        signals_low_freq = signals[:self.number_of_drons_on_low_freq] + signals[16:16+self.number_of_drons_on_low_freq]
-        signals_high_freq = signals[32:32+self.number_of_drons_on_high_freq] + signals[40:40+self.number_of_drons_on_high_freq]
-
-        # Суммирование low_freq со значениями high_freq в соответствии по дронам
-        signals_low_freq[2] += signals_high_freq[0]
-        signals_low_freq[3] += signals_high_freq[1]
-        new_signals = signals_low_freq
-        return new_signals
-
-    def collect_data_from_server(self, threshold, gains_list):
-        self.signal_threshold.emit(threshold)       # apply new threshold
-
-        # split gains list
-        splitted_gains_list = [gains_list[i:i + 6] for i in range(0, len(gains_list), 6)]
-
-        for i in range(self.number_of_drons):
-            # gains_list_to_send = self.conf_drons[list(self.conf_drons.keys())[0]]['name'] + splitted_gains_list[i]
-            splitted_gains_list[i].insert(0, self.conf_drons[list(self.conf_drons.keys())[i]]['name'])
-            self.signal_drons_gains.emit(splitted_gains_list[i])
-
-    def run(self):                          # run thread
-        freq_marker = b''
-        start_counter = 0
-        start_marker = b'\xff'
+    def recv_exact(self, n):
         data = b''
-        temp = b''
+        while len(data) < n:
+            packet = self.client.recv(n - len(data))
+            if not packet:
+                raise ConnectionError("Connection lost during recv_exact.")
+            data += packet
+        return data
+
+    def handle_data_packet(self):
+        type_of_packet = int.from_bytes(self.recv_exact(1), 'little')
+        sector_number = int.from_bytes(self.recv_exact(1), 'little')
+        packet_length = int.from_bytes(self.recv_exact(4), 'little')
+
+        if type_of_packet == 3:
+            end_flag_length = 8
+        else:
+            end_flag_length = 4
+
+        data = self.recv_exact(packet_length + end_flag_length)
+        self.unpack_data(type_of_packet, sector_number, data)
+
+    def handle_freq_packet(self, freq_numb):
+        self.logger.info('Reading frequencies from controller ...')
+
+        freq_samples = []
+        freq_numb = int.from_bytes(freq_numb, 'little') - 207
+        freq_length = int.from_bytes(self.recv_exact(1), 'little')
+        for i in range(int(freq_length / 2)):  # because 2 bytes on every frequency
+            freq_samples.append(int.from_bytes(self.client.recv(2), 'big'))
+        self.unpack_frequencies(freq_numb, freq_samples)
+
+    def handle_detect_settings(self):
+        self.logger.info('Reading detect settings.')
+
+        data_length = self.recv_exact(1)
+        if data_length == b'\x4a':
+            threshold = int.from_bytes(self.recv_exact(2), 'little')
+            gains = []
+            for i in range(self.number_of_drons * self.sectors):
+                gains.append(int.from_bytes(self.recv_exact(1), 'little'))
+            end_mark = int.from_bytes(self.recv_exact(4), 'little')
+            self.logger.info(f'New threshold from server: {threshold}')
+            self.logger.info(f'New gains from server: {gains}')
+            self.collect_data_from_server(threshold, gains)
+
+    def handle_fpv_data(self):
+        self.logger.info('Reading FPV data.')
+
+        data_length = int.from_bytes(self.recv_exact(1), 'little')
+        all_fpv_data = self.recv_exact(data_length)
+
+        # Unpack data
+        fpv_data = []
+        offset = 0
+        while offset + 5 <= len(all_fpv_data):          # 5 bytes for sector(1), ADC(2) and dispersion(2)
+            sector = all_fpv_data[offset]
+            average_ADC_value = int.from_bytes(all_fpv_data[offset + 1:offset + 3], 'little')
+            dispersion = int.from_bytes(all_fpv_data[offset + 3:offset + 5], 'little')
+            fpv_data.append({'sector': sector, 'average_ADC_value': average_ADC_value, 'dispersion': dispersion})
+            offset += 5
+
+        self.signal_fpvData_packet.emit(fpv_data)
+        # print(f'FPV Data packet: {fpv_data}')
+
+    def handle_fpvScope_data(self):
+        self.logger.info('Reading FPV Scope data.')
+
+        data_length = int.from_bytes(self.recv_exact(2), 'little')
+        all_freqs_data = self.recv_exact(data_length)
+
+        # Unpack data
+        if len(all_freqs_data) % 6 != 0:
+            self.logger.warning(f'Unexpected fpvScope data length: {len(all_freqs_data)} not divisible by 6.')
+
+        num_blocks = len(all_freqs_data) // 6
+        fpvScope_data = {'1G2': [], '3G3': [], '5G8': []}
+        for i in range(num_blocks):
+            offset = i * 6
+            freq = int.from_bytes(all_freqs_data[offset:offset + 2], 'little')
+            rssi = int.from_bytes(all_freqs_data[offset + 2:offset + 4], 'little')
+            fpv_coeff = int.from_bytes(all_freqs_data[offset + 4:offset + 6], 'little')
+            packet = {'freq': freq, 'rssi': rssi, 'fpv_coeff': fpv_coeff}
+            if 1080 <= freq <= 1258:
+                fpvScope_data['1G2'].append(packet)
+            elif 1080 <= freq <= 1258:
+                fpvScope_data['3G3'].append(packet)
+            elif 4990 <= freq <= 6028:
+                fpvScope_data['5G8'].append(packet)
+
+        self.signal_fpvScope_packet.emit(fpvScope_data)
+        # print(f'FPV Scope Data packet: {fpvScope_data}')
+
+    def handle_new_ip_response(self):
+        data_length = self.recv_exact(1)
+        status = self.recv_exact(1)
+        if status == b'\x00':
+            self.logger.success(f'IP address changed!')
+            self.signal_success_change_ip.emit(True)
+        elif status == b'\x01':
+            self.logger.error(f'Error with changing IP address!')
+        else:
+            self.logger.error(f'Unknown response: {status.hex()}')
+
+    def run(self):
+        buffer = bytearray()    # for check start marker
         while self.run_flag:
-            # try:
-            new_data = self.client.recv(1)
-            if new_data == start_marker:        # compare with start byte marker
-                start_counter += 1
-            elif new_data == b'\x0d':
-                start_counter = 0
-                data = b''
-                freq_samples = []
-                if self.client.recv(1) == b'\x0a':
-                    freq_numb = self.client.recv(1)
-                    if (freq_numb >= b'\xd0') and (freq_numb <= b'\xe7'):
-                        self.logger.info('Reading frequencies from controller ...')
-                        self.msleep(100)
-                        freq_numb = int.from_bytes(freq_numb, 'little') - 207      # % to pick one number
-                        freq_length = int.from_bytes(self.client.recv(1), 'little')
+            try:
+                byte = self.client.recv(1)
+                if not byte:
+                    self.logger.error('TCP connection closed!')
+                    break
 
-                        for i in range(int(freq_length / 2)):       # because 2 bytes on every frequency
-                            freq_samples.append(int.from_bytes(self.client.recv(2), 'big'))
-                        self.unpack_frequencies(freq_numb, freq_samples)
-                    elif freq_numb == b'\xab':
-                        data_length = self.client.recv(1)
-                        if data_length == b'\x4a':
-                            self.logger.info('Reading detect settings.')
-                            threshold = int.from_bytes(self.client.recv(2), 'little')
-                            gains = []
-                            for i in range(self.number_of_drons * self.sectors):
-                                gains.append(int.from_bytes(self.client.recv(1), 'little'))
-                            end_mark = int.from_bytes(self.client.recv(4), 'little')
-                            self.logger.info(f'New threshold from server: {threshold}')
-                            self.logger.info(f'New gains from server: {gains}')
-                            self.collect_data_from_server(threshold, gains)
-            else:
-                start_counter = 0
-            if start_counter == 4:  # compare with full start marker
-                data = b''  # clear array
-                type_of_packet = int.from_bytes(self.client.recv(1), 'little')
-                sector_number = int.from_bytes(self.client.recv(1), 'little')
-                packet_lenght = int.from_bytes(self.client.recv(4), 'little')
-                if type_of_packet == 3:
-                    end_flag_lenght = 8
-                elif type_of_packet == 1:
-                    end_flag_lenght = 4
-                else:
-                    end_flag_lenght = 4
-                data = self.client.recv(packet_lenght + end_flag_lenght)
+                buffer.append(byte[0])
+                if len(buffer) > 4:
+                    buffer.pop(0)
 
-                # print(data.hex(' '))
-                self.unpack_data(type_of_packet, sector_number, data)
-                start_counter = 0
-            # except:
-            #     print('No connection!')
-            #     self.signal_warning.emit('No connection!')
-            self.msleep(self.thread_timeout)
+                if bytes(buffer) == b'\xff\xff\xff\xff':
+                    self.handle_data_packet()
+                    buffer.clear()
+                    continue
+
+                if byte == b'\x0d':
+                    if self.recv_exact(1) == b'\x0a':
+                        cmd = self.recv_exact(1)
+                        if b'\xd0' <= cmd <= b'\xe7':
+                            self.handle_freq_packet(cmd)        # frequency packet
+                        elif cmd == b'\xab':
+                            self.handle_detect_settings()       # detect settings packet
+                        elif cmd == b'\x0e':
+                            self.handle_fpv_data()              # fpv data packet
+                        elif cmd == b'\x0f':
+                            self.handle_fpvScope_data()              # fpvScope data packet
+                        elif cmd == b'\x10':
+                            self.handle_new_ip_response()
+                self.msleep(self.thread_timeout)
+            except Exception as e:
+                self.logger.error(f'Error in TCP thread: {e}')
+                break
 
 
 class EmulationTread(QtCore.QThread):
@@ -638,7 +736,12 @@ class SerialSpinTread(QtCore.QThread):
 
     def handle_angle(self, angle: str):
         result = self.send_new_angle(angle)
-        self.signal_spin_done.emit(result == '01')
+        if result == '01':
+            self.logger.info("Angle set successfully.")
+            self.signal_spin_done.emit(True)
+        else:
+            self.signal_spin_done.emit(False)
+            self.logger.error("Failed to set angle.")
 
     def send_new_angle(self, angle: str):
         """Отправка команды на устройство"""
@@ -648,9 +751,19 @@ class SerialSpinTread(QtCore.QThread):
         try:
             command = f"Angle:{angle}\r\n"
             self.serial_port.write(command.encode())
-            self.logger.trace(f"Command to spinner sent: {command.strip()}")
-            response = self.serial_port.read(1)
-            return response.hex() if response else None
+            self.logger.info(f"Command to spinner sent: {command.strip()}")
+
+            # Ждем ответ (например, 1 байт подтверждения)
+            start_time = time.time()
+            while self.serial_port.in_waiting == 0 and (time.time() - start_time) < 1.0:
+                self.msleep(50)
+
+            if self.serial_port.in_waiting:
+                response = self.serial_port.read(1)
+                return response.hex() if response else None
+            else:
+                self.logger.warning("No response from spinner within timeout")
+                return None
 
         except Exception as e:
             self.logger.error(f"Serial error during command: {str(e)}")
@@ -659,27 +772,43 @@ class SerialSpinTread(QtCore.QThread):
     def set_port(self, port_name: str):
         self.port_name = port_name
 
-    def run(self):
-        self.logger.trace("Spinner Thread started")
+    def open_serial_port(self):
         try:
             self.serial_port = serial.Serial(port=self.port_name, baudrate=self.baudrate, timeout=1)
             self.logger.success(f"Connected to spinner: {self.port_name}")
-            self.running = True
-            self.signal_ready.emit()        # show that port is open
-
-            while self.running:
-                self.msleep(100)  # Небольшая пауза для снижения нагрузки
+            return True
         except serial.SerialException as e:
-            self.logger.error(f"Spinner serial error: {str(e)}")
+            self.logger.error(f"SerialException on open spinner port: {str(e)}")
+            return False
         except Exception as e:
-            self.logger.error(f"Error: {str(e)}")
-        finally:
-            if self.serial_port and self.serial_port.is_open:
+            self.logger.error(f"General error on open spinner port: {str(e)}")
+            return False
+
+    def close_serial_port(self):
+        if self.serial_port and self.serial_port.is_open:
+            try:
                 self.serial_port.close()
                 self.logger.info("Spinner serial port closed")
+            except Exception as e:
+                self.logger.error(f"Error closing serial spinner port: {str(e)}")
+        self.serial_port = None
+
+    def run(self):
+        self.logger.trace("Spinner Thread started")
+        if not self.open_serial_port():
+            return
+        self.running = True
+        self.signal_ready.emit()
+        try:
+            while self.running:
+                self.msleep(100)  # Небольшая пауза для снижения нагрузки
+        except Exception as e:
+            self.logger.error(f"Error in spinner thread: {str(e)}")
+        finally:
+            self.running = False
+            self.close_serial_port()
 
     def stop(self):
         """Остановка потока"""
         self.running = False
         self.wait()
-

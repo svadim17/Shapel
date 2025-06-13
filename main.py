@@ -3,7 +3,7 @@ import time
 import os
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QAction, QToolBar, QTabWidget, QSizePolicy, QSlider, \
-    QPushButton
+    QPushButton, QDockWidget, QVBoxLayout, QMainWindow
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt
 from loguru import logger
@@ -19,18 +19,31 @@ from submodules.peleng import PelengWidget
 from submodules.calibration import CalibrationWindow
 from submodules.fpv_video import FPVVideoWidget
 from submodules.fpv_scope import FPVScopeWidget
+from submodules.fpv_scope_settings import FpvScopeSettings
+from submodules.record_calibration import RecordCalibration
 from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMode, SerialSpinTread)
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        central_widget = QWidget(self)
-        self.grid = QGridLayout(central_widget)
-        self.setCentralWidget(central_widget)
-        self.setWindowTitle('Shapelle v25.23.5')
+        self.setWindowTitle('Shapel v25.24.5')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
+
+        # Минимизируем центральный виджет
+        central_widget = QWidget()
+        self.main_layout = QVBoxLayout()
+        central_widget.setLayout(self.main_layout)
+        central_widget.setFixedWidth(0)
+        central_widget.setMinimumHeight(0)
+
+        central_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.setCentralWidget(central_widget)
+
+        # Включаем вложенное размещение и разделители
+        self.setDockNestingEnabled(True)
+        self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowTabbedDocks | QMainWindow.AllowNestedDocks)
 
         self.settingsWidget = SettingsWidget(logger_=self.logger)
 
@@ -38,8 +51,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.calibrationWidget = CalibrationWindow(self.geometry().center(), self.settingsWidget.conf['sensivity_coeff'])
         self.create_actions()
         self.create_toolbar()
+        self.create_threshold_dock()
 
-        self.processor = Processor(self.settingsWidget.conf, self.settingsWidget.conf_drons)
+        self.processor = Processor(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
         self.init_dronesWidget()
         self.init_pelengWidget()
         if self.levelWidget_status:
@@ -48,13 +62,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.init_fpvVideoWidget()
         if self.fpvScopeWidget_status:
             self.init_fpvScopeWidget()
+        if self.recordCalibrationWidget_status:
+            self.init_recordCalibrationWidget()
         self.init_dataBase_logging()
 
         self.connection = None
         self.set_connection_type(self.settingsWidget.debug.cb_connection_type.currentText())
         self.link_events()
 
-        self.add_widgets_to_grid()
+        self.add_widgets_to_window()
 
     def init_widgets_status(self):
         self.dronesWidget_status = True
@@ -62,14 +78,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.levelWidget_status = bool(self.settingsWidget.conf['widgets']['levelWidget'])
         self.fpvVideoWidget_status = bool(self.settingsWidget.conf['widgets']['fpvVideoWidget'])
         self.fpvScopeWidget_status = bool(self.settingsWidget.conf['widgets']['fpvScopeWidget'])
+        self.recordCalibrationWidget_status = bool(self.settingsWidget.conf['widgets']['recordCalibrationWidget'])
 
-        self.dronesWidget_show = True
-        self.pelengWidget_show = True
-        self.levelWidget_show = bool(self.settingsWidget.conf['widgets_show']['levelWidget'])
-        self.fpvVideoWidget_show = bool(self.settingsWidget.conf['widgets_show']['fpvVideoWidget'])
-        self.fpvScopeWidget_show = bool(self.settingsWidget.conf['widgets_show']['fpvScopeWidget'])
-
-        self.DataBaseLog_flag = False
+        self.DataBaseLog_flag = True
 
     def create_actions(self):
         self.act_start = QAction('Start')
@@ -80,32 +91,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.act_settings = QAction('Settings')
         self.act_settings.setIcon(QIcon(f'assets/icons/btn_settings.png'))
         self.act_settings.triggered.connect(self.settingsWidget.show)
-
-        self.act_drones = QAction('Drones')
-        self.act_drones.setIcon(QIcon(f'assets/icons/drones_on.png'))
-        self.act_drones.triggered.connect(self.open_dronesWidget)
-
-        self.act_peleng = QAction('Peleng')
-        self.act_peleng.setIcon(QIcon(f'assets/icons/peleng_on.png'))
-        self.act_peleng.triggered.connect(self.open_pelengWidget)
-
-        if self.levelWidget_status:
-            icon_state = '_on' if self.levelWidget_show else ''
-            self.act_levels = QAction('Levels')
-            self.act_levels.setIcon(QIcon(f'assets/icons/levels{icon_state}.png'))
-            self.act_levels.triggered.connect(self.open_levelsWidget)
-
-        if self.fpvVideoWidget_status:
-            icon_state = '_on' if self.fpvVideoWidget_show else ''
-            self.act_fpv_video = QAction('FPV Video')
-            self.act_fpv_video.setIcon(QIcon(f'assets/icons/fpv_video{icon_state}.png'))
-            self.act_fpv_video.triggered.connect(self.open_fpvVideoWidget)
-
-        if self.fpvScopeWidget_status:
-            icon_state = '_on' if self.fpvScopeWidget_show else ''
-            self.act_fpv_scope = QAction('FPV Scope')
-            self.act_fpv_scope.setIcon(QIcon(f'assets/icons/fpv_scope{icon_state}.png'))
-            self.act_fpv_scope.triggered.connect(self.open_fpvScopeWidget)
 
         self.btn_auto_threshold = QPushButton()
         self.btn_auto_threshold.setIcon(QIcon(rf'assets/icons/refresh.png'))
@@ -121,14 +106,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolBar = QToolBar('Toolbar')
         self.toolBar.addAction(self.act_start)
         self.toolBar.addAction(self.act_settings)
-        self.toolBar.addAction(self.act_drones)
-        self.toolBar.addAction(self.act_peleng)
-        if self.levelWidget_status:
-            self.toolBar.addAction(self.act_levels)
-        if self.fpvVideoWidget_status:
-            self.toolBar.addAction(self.act_fpv_video)
-        if self.fpvScopeWidget_status:
-            self.toolBar.addAction(self.act_fpv_scope)
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.toolBar.addWidget(spacer)
@@ -136,16 +113,28 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
+    def create_threshold_dock(self):
         # Toolbar Threshold
-        self.tool_bar_threshold = QToolBar('Threshold')
-        self.addToolBar(Qt.ToolBarArea.RightToolBarArea, self.tool_bar_threshold)
+        self.thresholdDock = QDockWidget()
+        self.thresholdDock.setTitleBarWidget(QWidget())
+        self.thresholdDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.thresholdDock.setMaximumWidth(30)
+
+        slider_container = QWidget()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        slider_container.setLayout(layout)
         self.slider_threshold = QSlider(Qt.Vertical)
         self.slider_threshold.setMaximum(4000)
         self.slider_threshold.setValue(self.settingsWidget.conf['threshold'])
         slider_style = "QSlider::handle {width: 40px;}"  # change the size of a handle slider_threshold
         self.slider_threshold.setStyleSheet(slider_style)
-        self.tool_bar_threshold.addWidget(self.slider_threshold)
-        self.tool_bar_threshold.addWidget(self.btn_auto_threshold)
+        self.slider_threshold.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.btn_auto_threshold.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        layout.addWidget(self.slider_threshold)
+        layout.addWidget(self.btn_auto_threshold)
+        self.thresholdDock.setWidget(slider_container)
 
     def init_dronesWidget(self):
         self.dronesWidget = DronsCtrlWidget(self.settingsWidget.drons, int(self.settingsWidget.conf['threshold']))
@@ -161,6 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pelengWidget = PelengWidget(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
         self.pelengWidget.change_view_levels_flag(self.settingsWidget.debug.chb_peleng_level.checkState())
         self.processor.sig_peleng.connect(self.pelengWidget.draw_peleng)
+        self.processor.sig_warning.connect(self.pelengWidget.change_background_color)
         self.settingsWidget.debug.chb_average_peleng.clicked.connect(self.processor.change_average_flag)
         self.slider_threshold.valueChanged.connect(self.pelengWidget.change_threshold)
         self.dronesWidget.signal_drons_config_changed.connect(lambda drons_conf:
@@ -177,7 +167,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fpvVideoWidget = FPVVideoWidget(self.settingsWidget.connection.cb_camera.currentData(), self.logger)
 
     def init_fpvScopeWidget(self):
-        self.fpvScopeWidget = FPVScopeWidget(freqs_dict=self.settingsWidget.configuration_conf['fpv_scope_frequencies'])
+        self.fpvScopeWidget = FPVScopeWidget(self.settingsWidget.configuration_conf, self.logger)
+        self.fpvScopeSettingsWidget = FpvScopeSettings(self.logger)
+
+        self.settingsWidget.btn_dump_conf.clicked.connect(self.fpvScopeWidget.dump_configuration_conf)
+        self.fpvScopeWidget.signal_freq_point_clicked.connect(self.fpvScopeSettingsWidget.change_mode_on_manual)
+        self.fpvScopeSettingsWidget.signal_manual_mode_state.connect(self.fpvScopeWidget.change_mode_on_manual)
+
+    def init_recordCalibrationWidget(self):
+        self.recordCalibrationWidget = RecordCalibration(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
+
+
 
     def init_dataBase_logging(self):
         if not self.DataBaseLog_flag:
@@ -197,102 +197,58 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass
             self.DataBaseLog_flag = False
 
-    def add_widgets_to_grid(self):
-        self.tab_top_left = QTabWidget()
-        self.tab_top_left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        if self.dronesWidget_status:
-            self.dronesWidget_ind = self.tab_top_left.addTab(self.dronesWidget, 'Drones')
-        self.grid.addWidget(self.tab_top_left, 0, 0, 1, 1, Qt.AlignTop)
+    def add_widgets_to_window(self):
+        # Peleng и Levels (верхний правый)
+        self.pelengWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.pelengWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.pelengWidget.setMinimumWidth(600)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.pelengWidget)
 
-        self.tab_medium_left = QTabWidget()
-        self.tab_medium_left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # Drones (верхний левый)
+        self.dronesWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.dronesWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.dronesWidget.setMaximumWidth(200)  # Максимальная ширина для гибкости
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dronesWidget)
+        self.splitDockWidget(self.pelengWidget, self.dronesWidget, Qt.Horizontal)  # Размещаем справа от pelengWidget
+
+        # FPV Video (средний левый, если включено) и FPV Scope Settings
         if self.fpvVideoWidget_status:
-            self.fpvVideoWidget_ind = self.tab_medium_left.addTab(self.fpvVideoWidget, 'FPV Video')
-        if self.fpvVideoWidget_ind is not None and not self.fpvVideoWidget_show:
-            self.tab_medium_left.widget(self.fpvVideoWidget_ind).hide()
-            self.tab_medium_left.setTabText(self.fpvVideoWidget_ind, "")
-        self.grid.addWidget(self.tab_medium_left, 1, 0, 1, 1, Qt.AlignTop)
+            self.fpvVideoWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.fpvVideoWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.fpvVideoWidget.setMinimumWidth(300)
+            self.fpvVideoWidget.setMinimumHeight(300)
+            self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvVideoWidget)
 
-        self.tab_top_right = QTabWidget()
-        self.tab_top_right.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        if self.pelengWidget_status:
-            self.pelengWidget_ind = self.tab_top_right.addTab(self.pelengWidget, 'Peleng')
+            self.fpvScopeSettingsWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.fpvScopeSettingsWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.fpvScopeSettingsWidget.setMaximumHeight(100)
+            self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvScopeSettingsWidget)
+            self.splitDockWidget(self.fpvVideoWidget, self.fpvScopeSettingsWidget, Qt.Vertical)
+
+        if self.recordCalibrationWidget_status:
+            self.recordCalibrationWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.recordCalibrationWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.recordCalibrationWidget.setMaximumWidth(500)
+            if self.fpvVideoWidget_status:
+                self.tabifyDockWidget(self.fpvVideoWidget, self.recordCalibrationWidget)
+
+        # Threshold Dock
+        self.addDockWidget(Qt.RightDockWidgetArea, self.thresholdDock)
+        self.splitDockWidget(self.dronesWidget, self.thresholdDock, Qt.Horizontal)  # Размещаем справа от pelengWidget
+
         if self.levelWidget_status:
-            self.levelWidget_ind = self.tab_top_right.addTab(self.levelWidget, 'Levels')
-        if self.levelWidget_ind is not None and not self.levelWidget_show:
-            self.tab_top_right.widget(self.levelWidget_ind).hide()
-            self.tab_top_right.setTabText(self.levelWidget_ind, "")
-        self.grid.addWidget(self.tab_top_right, 0, 1, 2, 2, Qt.AlignTop)
+            self.levelWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.levelWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.levelWidget.setMinimumWidth(300)
+            self.tabifyDockWidget(self.pelengWidget, self.levelWidget)  # Добавляем levelWidget как вкладку к pelengWidget
 
-        if self.fpvScopeWidget_status and self.fpvScopeWidget_show:
-            self.grid.addWidget(self.fpvScopeWidget, 2, 0, 1, 3, Qt.AlignTop)
-
-    def open_dronesWidget(self):
-        if self.dronesWidget_show:
-            self.tab_top_left.widget(self.dronesWidget_ind).hide()
-            self.tab_top_left.setTabEnabled(self.dronesWidget_ind, False)
-            self.tab_top_left.setTabText(self.dronesWidget_ind, "")  # Или "Скрыто"
-            self.act_drones.setIcon(QIcon(f'assets/icons/drones.png'))
-            self.dronesWidget_show = False
-        else:
-            self.tab_top_left.widget(self.dronesWidget_ind).show()
-            self.tab_top_left.setTabEnabled(self.dronesWidget_ind, True)
-            self.tab_top_left.setTabText(self.dronesWidget_ind, "Drones")
-            self.act_drones.setIcon(QIcon(f'assets/icons/drones_on.png'))
-            self.dronesWidget_show = True
-
-    def open_pelengWidget(self):
-        if self.pelengWidget_show:
-            self.tab_top_right.widget(self.pelengWidget_ind).hide()
-            self.tab_top_right.setTabEnabled(self.pelengWidget_ind, False)
-            self.tab_top_right.setTabText(self.pelengWidget_ind, "")  # Или "Скрыто"
-            self.act_peleng.setIcon(QIcon(f'assets/icons/peleng.png'))
-            self.pelengWidget_show = False
-        else:
-            self.tab_top_right.widget(self.pelengWidget_ind).show()
-            self.tab_top_right.setTabEnabled(self.pelengWidget_ind, True)
-            self.tab_top_right.setTabText(self.pelengWidget_ind, "Peleng")
-            self.act_peleng.setIcon(QIcon(f'assets/icons/peleng_on.png'))
-            self.pelengWidget_show = True
-
-    def open_levelsWidget(self):
-        if self.levelWidget.isVisible():
-            self.tab_top_right.widget(self.levelWidget_ind).hide()
-            self.tab_top_right.setTabEnabled(self.levelWidget_ind, False)
-            self.tab_top_right.setTabText(self.levelWidget_ind, "")  # Или "Скрыто"
-            self.act_levels.setIcon(QIcon(f'assets/icons/levels.png'))
-            self.levelWidget_show = False
-        else:
-            self.tab_top_right.widget(self.levelWidget_ind).show()
-            self.tab_top_right.setTabEnabled(self.levelWidget_ind, True)
-            self.tab_top_right.setTabText(self.levelWidget_ind, "Levels")
-            self.act_levels.setIcon(QIcon(f'assets/icons/levels_on.png'))
-            self.levelWidget_show = True
-
-    def open_fpvVideoWidget(self):
-        if self.fpvVideoWidget.isVisible():
-            self.tab_medium_left.widget(self.fpvVideoWidget_ind).hide()
-            self.tab_medium_left.setTabEnabled(self.fpvVideoWidget_ind, False)
-            self.tab_medium_left.setTabText(self.fpvVideoWidget_ind, "")  # Или "Скрыто"
-            self.act_fpv_video.setIcon(QIcon(f'assets/icons/fpv_video.png'))
-            self.fpvVideoWidget_show = False
-        else:
-            self.tab_medium_left.widget(self.fpvVideoWidget_ind).show()
-            self.tab_medium_left.setTabEnabled(self.fpvVideoWidget_ind, True)
-            self.tab_medium_left.setTabText(self.fpvVideoWidget_ind, "FPV Video")
-            self.act_fpv_video.setIcon(QIcon(f'assets/icons/fpv_video_on.png'))
-            self.fpvVideoWidget_show = True
-
-    def open_fpvScopeWidget(self):
-        if self.fpvScopeWidget.isVisible():
-            self.grid.removeWidget(self.fpvScopeWidget)
-            self.fpvScopeWidget.setParent(None)
-            self.act_fpv_scope.setIcon(QIcon(f'assets/icons/fpv_scope.png'))
-            self.fpvScopeWidget_show = False
-        else:
-            self.grid.addWidget(self.fpvScopeWidget, 2, 0, 1, 3)
-            self.act_fpv_scope.setIcon(QIcon(f'assets/icons/fpv_scope_on.png'))
-            self.fpvScopeWidget_show = True
+        # FPV Scope (нижняя часть, если включено)
+        if self.fpvScopeWidget_status:
+            self.fpvScopeWidget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            self.fpvScopeWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.fpvScopeWidget.setMaximumHeight(550)
+            self.fpvScopeWidget.setMinimumHeight(300)
+            self.addDockWidget(Qt.BottomDockWidgetArea, self.fpvScopeWidget)
 
     def set_connection_type(self, mode='emulation'):
         if self.connection is not None:
@@ -301,7 +257,8 @@ class MainWindow(QtWidgets.QMainWindow):
             frequencies =[self.settingsWidget.conf_drons[key]['frequency'] for key in self.settingsWidget.conf_drons]
             if mode == 'emulation' or mode == 'Emulation':
                 self.connection = EmulationTread(len(self.settingsWidget.conf_drons.keys()),
-                                                 self.settingsWidget.connection.spb_timeout.value())
+                                                 self.settingsWidget.connection.spb_timeout.value(),
+                                                 self.logger)
             elif mode == 'tcp' or mode == 'TCP' or mode == 'Tcp':
                 self.connection = TCPTread(calibration_coeff=self.settingsWidget.conf['calibration_coefficients'],
                                            frequencies=frequencies,
@@ -325,15 +282,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def change_connection_state(self, status: bool):
         if status:
             self.act_start.setIcon(QIcon(f'assets/icons/btn_stop.png'))
-            self.levelWidget.clear_plot()
+            if self.levelWidget_status:
+                self.levelWidget.clear_plot()
             try:
                 if self.settingsWidget.debug.cb_connection_type.currentText() == 'TCP':
                     self.connection.open(self.settingsWidget.connection.le_ip_address.text(),
-                                         self.settingsWidget.connection.cb_port_numb.currentText())
+                                         self.settingsWidget.connection.le_port_numb.text())
                 else:
-                    self.connection.open(self.settingsWidget.connection.cb_port_numb.currentText())
+                    self.connection.open(self.settingsWidget.connection.le_port_numb.text())
             except Exception as e:
-                self.logger.error(f'No connection with {self.settingsWidget.connection.cb_port_numb.currentText()}\n{e}')
+                self.logger.error(f'No connection with {self.settingsWidget.connection.le_port_numb.text()}\n{e}')
         else:
             self.act_start.setIcon(QIcon(f'assets/icons/btn_start.png'))
             self.connection.close()
@@ -341,6 +299,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def link_events(self):
         self.processor.sig_auto_threshold.connect(self.change_threshold)
         self.processor.sig_progrBar_value.connect(self.calibrationWidget.change_value_progressBar)
+        self.processor.sig_warning.connect(self.settingsWidget.debug.event_play_sound)
 
         self.slider_threshold.valueChanged.connect(self.processor.change_threshold)
         self.slider_threshold.valueChanged.connect(lambda threshold: self.settingsWidget.conf.update({'threshold': threshold}))
@@ -350,6 +309,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connection.signal_threshold.connect(self.processor.change_threshold)
         self.connection.signal_threshold.connect(self.change_threshold)
         self.connection.signal_threshold.connect(lambda threshold: self.settingsWidget.conf.update({'threshold': threshold}))
+        self.connection.signal_success_change_ip.connect(self.settingsWidget.connection.update_tcp_parameters)
 
         # Calibration coefficients signal for TCP connection
         self.connection.signal_calibration.connect(self.dronesWidget.set_calibration)
@@ -360,6 +320,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.settingsWidget.debug.cb_connection_type.currentTextChanged.connect(self.set_connection_type)
         self.settingsWidget.connection.spb_timeout.valueChanged.connect(self.connection.set_timeout)
+        self.settingsWidget.connection.btn_change_ip.clicked.connect(lambda: self.connection.send_command_to_change_ip(
+                                                            new_ip=self.settingsWidget.connection.le_new_ip.text(),
+                                                            new_port=self.settingsWidget.connection.le_new_port.text()))
         self.settingsWidget.connection.btn_send_detect_settings.clicked.connect(self.connection.send_detect_settings)
         self.settingsWidget.connection.btn_receive_detect_settings.clicked.connect(self.connection.receive_detect_settings)
         self.settingsWidget.connection.cb_camera.currentTextChanged.connect(lambda: self.fpvVideoWidget.change_camera(
@@ -374,9 +337,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.calibrationWidget.btn_calibrate.clicked.connect(self.processor.reset_receive_counter)
         self.calibrationWidget.spb_calibration_time.setValue(self.processor.calibration_time)
         self.calibrationWidget.spb_calibration_time.valueChanged.connect(self.processor.change_calibration_time)
-        self.calibrationWidget.cntrl_sensivity.valueChanged.connect(lambda coeff:
-                                                                     self.settingsWidget.conf.update({'sensivity_coeff': coeff}))
-        self.calibrationWidget.cntrl_sensivity.valueChanged.connect(self.processor.change_sensivity_coeff)
+
+        if self.recordCalibrationWidget_status:
+            self.connection.signal_levels.connect(self.recordCalibrationWidget.accumulate_signals)
+            self.processor.sig_norm_levels_and_pelengs.connect(self.recordCalibrationWidget.accumulate_norm_signals)
+
+        if self.fpvScopeWidget_status:
+            self.connection.signal_fpvScope_packet.connect(self.fpvScopeWidget.update_graph)
+
+
 
     def change_threshold(self, value):
         self.slider_threshold.setValue(value)
@@ -398,6 +367,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    font = QFont("Arial", 10)
+    app.setFont(font)
 
     colors = {'[dark]': {'primary': "#4CAF50",
                        'background': "#212121",

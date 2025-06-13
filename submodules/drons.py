@@ -1,6 +1,6 @@
 import math
 from PyQt5.QtWidgets import QDockWidget, QWidget, QHBoxLayout, QPushButton, QSpacerItem, QSizePolicy, QVBoxLayout, \
-    QColorDialog, QDialog, QLabel, QSlider, QSpinBox
+    QColorDialog, QDialog, QLabel, QSlider, QSpinBox, QGroupBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QSignalMapper
 from submodules.basic import Dron
 
@@ -14,12 +14,12 @@ class DronsCtrlWidget(QDockWidget, QWidget):
 
     def __init__(self, drons: list, threshold: int):
         super().__init__()
-        self.setTitleBarWidget(QWidget())
-        self.setMinimumWidth(100)
-        self.setMaximumWidth(500)
+        self.setWindowTitle('Drones')
         self.setWidget(QWidget())
 
-        self.main_layout = QHBoxLayout()  # create vertical layout for buttons
+        # drons.pop(0)
+        # drons.pop(5)
+        self.main_layout = QVBoxLayout()  # create vertical layout for buttons
         self.main_layout.setAlignment(Qt.AlignTop)
         self.widget().setLayout(self.main_layout)
         self.dron_counter = 0
@@ -32,7 +32,8 @@ class DronsCtrlWidget(QDockWidget, QWidget):
         self.mapper_open_gain_settings = QSignalMapper()
         self.mapper_set_color = QSignalMapper()
         for dron in drons:
-            self.btn_dron_settings[self.dron_counter] = QPushButton(dron.name)  # create buttons
+            btn_name = (dron.name).replace('-2.4G', '').replace('-5.8G', '')
+            self.btn_dron_settings[self.dron_counter] = QPushButton(btn_name)  # create buttons
             self.btn_dron_settings[self.dron_counter].setCheckable(False)
             self.dialogs[self.dron_counter] = Drons_detect_settings(dron)
             self.dialogs[self.dron_counter].signal_gain_changed.connect(self.update_config)
@@ -59,8 +60,6 @@ class DronsCtrlWidget(QDockWidget, QWidget):
         self.change_btn_color(True, [], [])
 
     def customize_btns(self):
-        # a = QPushButton()
-        # a.setMinimumWidth()
         for i in range(len(self.btn_dron_settings)):
             self.btn_dron_settings[i].setMaximumWidth(160)
             self.btn_dron_settings[i].setMinimumWidth(135)
@@ -68,24 +67,31 @@ class DronsCtrlWidget(QDockWidget, QWidget):
             self.color_rect[i].setFixedSize(17, 33)
 
     def add_widgets_to_layout(self):
+        self.box_2g4 = QGroupBox('2.4 GHz')
+        self.box_5g8 = QGroupBox('5.8 GHz')
+
         btns_24_layout = QVBoxLayout()
         btns_24_layout.setAlignment(Qt.AlignTop)
         btns_58_layout = QVBoxLayout()
         btns_58_layout.setAlignment(Qt.AlignTop)
 
         for i in range(int(len(self.btn_dron_settings) / 2)):
-            temp_layout_1 = QHBoxLayout()
-            temp_layout_1.addWidget(self.btn_dron_settings[i])
-            temp_layout_1.addWidget(self.color_rect[i])
-            btns_24_layout.addLayout(temp_layout_1)
+            if not (i == 0 or i == 6):
+                temp_layout_1 = QHBoxLayout()
+                temp_layout_1.addWidget(self.color_rect[i])
+                temp_layout_1.addWidget(self.btn_dron_settings[i])
+                btns_24_layout.addLayout(temp_layout_1)
 
-            temp_layout_2 = QHBoxLayout()
-            temp_layout_2.addWidget(self.btn_dron_settings[int(len(self.btn_dron_settings) / 2) + i])
-            temp_layout_2.addWidget(self.color_rect[int(len(self.btn_dron_settings) / 2) + i])
-            btns_58_layout.addLayout(temp_layout_2)
+                temp_layout_2 = QHBoxLayout()
+                temp_layout_2.addWidget(self.color_rect[int(len(self.btn_dron_settings) / 2) + i])
+                temp_layout_2.addWidget(self.btn_dron_settings[int(len(self.btn_dron_settings) / 2) + i])
+                btns_58_layout.addLayout(temp_layout_2)
 
-        self.main_layout.addLayout(btns_24_layout)
-        self.main_layout.addLayout(btns_58_layout)
+        self.box_2g4.setLayout(btns_24_layout)
+        self.box_5g8.setLayout(btns_58_layout)
+
+        self.main_layout.addWidget(self.box_2g4)
+        self.main_layout.addWidget(self.box_5g8)
 
     def set_calibration(self, coeff: list):
         for i in range(len(self.dialogs)):
@@ -100,10 +106,7 @@ class DronsCtrlWidget(QDockWidget, QWidget):
         self.signal_drons_config_changed.emit(self.drons[a].collect())
 
     def update_gains(self, gains: list):
-        # print(gains)
         updated_dron_name = gains.pop(0)
-        # print(updated_dron_name)
-        # print(gains)
         for index, dron in enumerate(self.drons):
             if dron.name == updated_dron_name:
                 dron_index = index
@@ -140,10 +143,13 @@ class Drons_detect_settings(QDialog):
         self.dron = dron
         self.setWindowTitle(self.dron.name + ' |  Gain')
         self.setFixedSize(QSize(270, 370))
-        self.move(40, 100)
+        # self.move(40, 100)
         sliders_layout = QVBoxLayout()
         self.setLayout(sliders_layout)
-        reset_settings_layout = QHBoxLayout()
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        if self.parent():
+            parent_center = self.parent().geometry().center()
+            self.move(parent_center - self.rect().center())
 
         self.sectors = len(self.dron.gains)
 
@@ -163,7 +169,7 @@ class Drons_detect_settings(QDialog):
 
             self.slider_ant[i] = QSlider(Qt.Horizontal)  # create horizontal slider
             self.slider_ant[i].setTickPosition(QSlider.TicksBelow)  # enable ticks below
-            self.slider_ant[i].setRange(1, 100)
+            self.slider_ant[i].setRange(0, 100)
             self.slider_ant[i].setValue(self.dron.gains[i])
             self.slider_layout[i].addWidget(self.slider_ant[i])
 
@@ -174,27 +180,25 @@ class Drons_detect_settings(QDialog):
             # Set up connection for show real value of slider
             self.label_slider_value[i] = QLabel(str(self.slider_ant[i].value()))
             self.slider_layout[i].addWidget(self.label_slider_value[i])
-            self.slider_ant[i].valueChanged.connect(lambda value, index=i:
-                                                    self.label_slider_value[index].setText(str(value)))
+            self.slider_ant[i].valueChanged.connect(lambda value, index=i: self.on_slider_value_changed(index, value))
             sliders_layout.addLayout(self.slider_layout[i])
 
         # Add reset gain controls
+        self.l_spb_reset = QLabel('All gains')
         self.spb_reset_gain = QSpinBox()
         self.spb_reset_gain.setFixedSize(70, 30)
         self.spb_reset_gain.setRange(0, 200)
-        self.spb_reset_gain.setSingleStep(5)
+        self.spb_reset_gain.setSingleStep(1)
         self.spb_reset_gain.setValue(self.dron.gains[0])
         self.spb_reset_gain.setStyleSheet("QSpinBox::up-button {height: 20px;}"
                                           "QSpinBox::down-button {height: 20px;}")
+        self.spb_reset_gain.valueChanged.connect(self.event_reset_gains)
 
-        self.btn_reset_gain = QPushButton('Reset')
-        self.btn_reset_gain.setFixedSize(100, 30)
-
-        reset_settings_layout.addWidget(self.btn_reset_gain)
+        reset_settings_layout = QVBoxLayout()
+        reset_settings_layout.setAlignment(Qt.AlignCenter)
+        reset_settings_layout.addWidget(self.l_spb_reset)
         reset_settings_layout.addWidget(self.spb_reset_gain)
         sliders_layout.addLayout(reset_settings_layout)
-
-        self.btn_reset_gain.clicked.connect(self.event_reset_gains)
 
     def event_reset_gains(self):
         for i in range(len(self.slider_ant)):
@@ -218,9 +222,14 @@ class Drons_detect_settings(QDialog):
         for i in range(len(self.slider_ant)):
             self.slider_ant[i].setValue(gains[i])
 
-    def closeEvent(self, event):
-        self.dron.gains = self.get_gains()
-        # print('self.dron.gains = ', self.dron.gains)
+    # def closeEvent(self, event):
+    #     self.dron.gains = self.get_gains()
+    #     # print('self.dron.gains = ', self.dron.gains)
+    #     self.signal_gain_changed.emit(self.dron.collect())
+
+    def on_slider_value_changed(self, index, value):
+        self.label_slider_value[index].setText(str(value))
+        self.dron.gains[index] = value
         self.signal_gain_changed.emit(self.dron.collect())
 
     def showEvent(self, event):

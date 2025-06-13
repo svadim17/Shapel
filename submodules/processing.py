@@ -22,10 +22,11 @@ class Processor(QtCore.QObject):
     sig_drons_config_changed = pyqtSignal(dict)
     sig_norm_levels_and_pelengs = pyqtSignal(Packet_levels, list)
 
-    def __init__(self, config: dict, dron_config: dict):
+    def __init__(self, config: dict, dron_config: dict, logger_):
         super().__init__()
         self.dron_config = dron_config
         self.get_config(config)
+        self.logger = logger_
         self.get_drons_config(dron_config)
         self.full_pack_2D = np.zeros((self.sectors, self.number_of_drons), dtype=np.int32)
         self.last_pelens = None
@@ -110,6 +111,7 @@ class Processor(QtCore.QObject):
 
     def send_calibration_coeff(self):
         self.sig_calibration_coeff.emit(self.extra_auto_gains)
+        self.logger.info(f'Calibration extra gains were sent')
 
     def find_sectors_for_peleng(self) -> list[Data_for_peleng]:
         max_signals = []
@@ -181,13 +183,22 @@ class Processor(QtCore.QObject):
                 antenna_right = packets[i].nearest_antenna
                 antenna_left = packets[i].max_antenna
 
+            mini_angle = 0
             if 2400 == self.drons[i].frequency:
-                mini_angle = ((value_right - value_left) / (value_right + value_left)) * self.a_24
+                denominator = value_left + value_right
+                if denominator != 0:
+                    mini_angle = ((value_right - value_left) / denominator) * self.a_24
+                else:
+                    self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 2.4G due to zero denominator')
             elif 5800 == self.drons[i].frequency:
-                mini_angle = ((value_right - value_left) / (value_right + value_left)) * self.a_58
+                denominator = value_left + value_right
+                if denominator != 0:
+                    mini_angle = ((value_right - value_left) / denominator) * self.a_58
+                else:
+                    self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 5.8G due to zero denominator')
             else:
                 # вызывается деление на 0, когда диапазон неизвестен
-                mini_angle = self.a_24 * ((value_right / 0) - (value_left / 0)) - self.b_24
+                self.logger.error(f'Unknown frequency for calculate peleng!')
 
             if mini_angle < -30:
                 mini_angle = -30
@@ -271,6 +282,7 @@ class Processor(QtCore.QObject):
         self.sig_auto_threshold.emit(self.threshold)
 
     def reset_receive_counter(self):
+        self.logger.info('Calibration started')
         self.receive_counter = 0
         self.receive_accum.clear()
         self.numb_of_auto_receives = int(self.calibration_time / self.time_for_one_receive)

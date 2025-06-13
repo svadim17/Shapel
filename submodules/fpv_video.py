@@ -11,9 +11,7 @@ class FPVVideoWidget(QDockWidget, QWidget):
     def __init__(self, camera, logger_):
         super().__init__()
         self.logger = logger_
-        self.setMaximumWidth(500)
-        self.setTitleBarWidget(QWidget())
-        self.setFixedHeight(270)
+        self.setWindowTitle('FPV Video')
 
         self.setWidget(QWidget())
         self.main_layout = QVBoxLayout()  # create vertical layout for buttons
@@ -31,7 +29,7 @@ class FPVVideoWidget(QDockWidget, QWidget):
         self.main_layout.addWidget(self.viewfinder)
 
     def change_camera(self, camera):
-        self.logger.info(f'New camera: {camera.description()}')
+        self.logger.info(f'Camera was changed on: {camera.description()}')
 
         self.camera.stop()          # stop current camera
         self.camera.deleteLater()

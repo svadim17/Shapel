@@ -18,8 +18,8 @@ class PowerLevelWidget(QDockWidget, QWidget):
     # slider_value_changed_signal = pyqtSignal(int, int)
     def __init__(self, config, drons_config):
         super().__init__()
-        # self.setMaximumHeight(600)
-        self.setTitleBarWidget(QWidget())
+        self.setWindowTitle('Levels')
+
         self.graphWindow = pg.GraphicsLayoutWidget()
         self.setWidget(self.graphWindow)
         self.plot = self.graphWindow.addPlot()

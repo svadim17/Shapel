@@ -17,8 +17,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'Mavic2'
+    name: Mavic2
   DJI_Mavic3:
     frequencies:
     - '100'
@@ -37,8 +36,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'Mavic3'
+    name: Mavic3
   Autel:
     frequencies:
     - '100'
@@ -57,8 +55,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'Autel'
+    name: Autel
   FPV:
     frequencies:
     - '100'
@@ -77,8 +74,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'FPV'
+    name: FPV
   Xiaomi:
     frequencies:
     - '100'
@@ -97,8 +93,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'Xiaomi'
+    name: Xiaomi
   MavicMini:
     frequencies:
     - '100'
@@ -117,8 +112,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'MavicMini'
+    name: MavicMini
   Autel_200kHz:
     frequencies:
     - '100'
@@ -137,8 +131,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'Autel 200kHz'
+    name: Autel 200kHz
   FPV_200kHz:
     frequencies:
     - '100'
@@ -157,325 +150,240 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name:
-      'FPV 200kHz'
+    name: FPV 200kHz
 fpv_scope_frequencies:
   1.2:
-    - 1080:
-        threshold:
-          4
-    - 1120:
-        threshold:
-          4
-    - 1160:
-        threshold:
-          4
-    - 1200:
-        threshold:
-          4
-    - 1240:
-        threshold:
-          4
-    - 1280:
-        threshold:
-          4
-    - 1320:
-        threshold:
-          4
-    - 1360:
-        threshold:
-          4
-    - 1258:
-        threshold:
-          4
+  - 1080:
+      threshold: 14
+  - 1120:
+      threshold: 14
+  - 1160:
+      threshold: 14
+  - 1200:
+      threshold: 15
+  - 1240:
+      threshold: 16
+  - 1280:
+      threshold: 15
+  - 1320:
+      threshold: 14
+  - 1360:
+      threshold: 14
+  - 1258:
+      threshold: 15
   3.3:
-    - 3170:
-        threshold:
-          4
-    - 3190:
-        threshold:
-          4
-    - 3210:
-        threshold:
-          4
-    - 3230:
-        threshold:
-          4
-    - 3250:
-        threshold:
-          4
-    - 3270:
-        threshold:
-          4
-    - 3290:
-        threshold:
-          4
-    - 3310:
-        threshold:
-          4
-    - 3330:
-        threshold:
-          4
-    - 3350:
-        threshold:
-          4
-    - 3370:
-        threshold:
-          4
-    - 3390:
-        threshold:
-          4
-    - 3410:
-        threshold:
-          4
-    - 3430:
-        threshold:
-          4
-    - 3450:
-        threshold:
-          4
-    - 3470:
-        threshold:
-          4
+  - 3170:
+      threshold: 18
+  - 3190:
+      threshold: 17
+  - 3210:
+      threshold: 16
+  - 3230:
+      threshold: 16
+  - 3250:
+      threshold: 16
+  - 3270:
+      threshold: 15
+  - 3290:
+      threshold: 15
+  - 3310:
+      threshold: 15
+  - 3330:
+      threshold: 15
+  - 3350:
+      threshold: 15
+  - 3370:
+      threshold: 16
+  - 3390:
+      threshold: 15
+  - 3410:
+      threshold: 15
+  - 3430:
+      threshold: 14
+  - 3450:
+      threshold: 15
+  - 3470:
+      threshold: 14
   5.8:
-    - 4990:
-        threshold:
-          4
-    - 5020:
-        threshold:
-          4
-    - 5050:
-        threshold:
-          4
-    - 5080:
-        threshold:
-          4
-    - 5110:
-        threshold:
-          4
-    - 5140:
-        threshold:
-          4
-    - 5170:
-        threshold:
-          4
-    - 5200:
-        threshold:
-          4
-    - 5325:
-        threshold:
-          4
-    - 5333:
-        threshold:
-          4
-    - 5348:
-        threshold:
-          4
-    - 5366:
-        threshold:
-          4
-    - 5373:
-        threshold:
-          4
-    - 5384:
-        threshold:
-          4
-    - 5402:
-        threshold:
-          4
-    - 5413:
-        threshold:
-          4
-    - 5420:
-        threshold:
-          4
-    - 5438:
-        threshold:
-          4
-    - 5453:
-        threshold:
-          4
-    - 5456:
-        threshold:
-          4
-    - 5474:
-        threshold:
-          4
-    - 5492:
-        threshold:
-          4
-    - 5493:
-        threshold:
-          4
-    - 5510:
-        threshold:
-          4
-    - 5528:
-        threshold:
-          4
-    - 5533:
-        threshold:
-          4
-    - 5546:
-        threshold:
-          4
-    - 5564:
-        threshold:
-          4
-    - 5573:
-        threshold:
-          4
-    - 5582:
-        threshold:
-          4
-    - 5600:
-        threshold:
-          4
-    - 5613:
-        threshold:
-          4
-    - 5645:
-        threshold:
-          4
-    - 5653:
-        threshold:
-          4
-    - 5658:
-        threshold:
-          4
-    - 5665:
-        threshold:
-          4
-    - 5685:
-        threshold:
-          4
-    - 5693:
-        threshold:
-          4
-    - 5695:
-        threshold:
-          4
-    - 5705:
-        threshold:
-          4
-    - 5725:
-        threshold:
-          4
-    - 5732:
-        threshold:
-          4
-    - 5733:
-        threshold:
-          4
-    - 5740:
-        threshold:
-          4
-    - 5745:
-        threshold:
-          4
-    - 5752:
-        threshold:
-          4
-    - 5760:
-        threshold:
-          4
-    - 5765:
-        threshold:
-          4
-    - 5769:
-        threshold:
-          4
-    - 5771:
-        threshold:
-          4
-    - 5773:
-        threshold:
-          4
-    - 5780:
-        threshold:
-          4
-    - 5785:
-        threshold:
-          4
-    - 5790:
-        threshold:
-          4
-    - 5800:
-        threshold:
-          4
-    - 5805:
-        threshold:
-          4
-    - 5806:
-        threshold:
-          4
-    - 5809:
-        threshold:
-          4
-    - 5813:
-        threshold:
-          4
-    - 5820:
-        threshold:
-          4
-    - 5825:
-        threshold:
-          4
-    - 5828:
-        threshold:
-          4
-    - 5840:
-        threshold:
-          4
-    - 5843:
-        threshold:
-          4
-    - 5845:
-        threshold:
-          4
-    - 5847:
-        threshold:
-          4
-    - 5853:
-        threshold:
-          4
-    - 5860:
-        threshold:
-          4
-    - 5865:
-        threshold:
-          4
-    - 5866:
-        threshold:
-          4
-    - 5880:
-        threshold:
-          4
-    - 5885:
-        threshold:
-          4
-    - 5893:
-        threshold:
-          4
-    - 5905:
-        threshold:
-          4
-    - 5917:
-        threshold:
-          4
-    - 5925:
-        threshold:
-          4
-    - 5933:
-        threshold:
-          4
-    - 5945:
-        threshold:
-          4
-    - 6002:
-        threshold:
-          4
-    - 6028:
-        threshold:
-          4
-
+  - 4990:
+      threshold: 23
+  - 5020:
+      threshold: 23
+  - 5050:
+      threshold: 25
+  - 5080:
+      threshold: 23
+  - 5110:
+      threshold: 23
+  - 5140:
+      threshold: 23
+  - 5170:
+      threshold: 26
+  - 5200:
+      threshold: 23
+  - 5325:
+      threshold: 24
+  - 5333:
+      threshold: 22
+  - 5348:
+      threshold: 21
+  - 5366:
+      threshold: 21
+  - 5373:
+      threshold: 21
+  - 5384:
+      threshold: 23
+  - 5402:
+      threshold: 21
+  - 5413:
+      threshold: 21
+  - 5420:
+      threshold: 22
+  - 5438:
+      threshold: 21
+  - 5453:
+      threshold: 20
+  - 5456:
+      threshold: 21
+  - 5474:
+      threshold: 19
+  - 5492:
+      threshold: 22
+  - 5493:
+      threshold: 17
+  - 5510:
+      threshold: 16
+  - 5528:
+      threshold: 13
+  - 5533:
+      threshold: 14
+  - 5546:
+      threshold: 16
+  - 5564:
+      threshold: 19
+  - 5573:
+      threshold: 22
+  - 5582:
+      threshold: 19
+  - 5600:
+      threshold: 16
+  - 5613:
+      threshold: 16
+  - 5645:
+      threshold: 18
+  - 5653:
+      threshold: 17
+  - 5658:
+      threshold: 20
+  - 5665:
+      threshold: 22
+  - 5685:
+      threshold: 22
+  - 5693:
+      threshold: 20
+  - 5695:
+      threshold: 20
+  - 5705:
+      threshold: 18
+  - 5725:
+      threshold: 19
+  - 5732:
+      threshold: 18
+  - 5733:
+      threshold: 18
+  - 5740:
+      threshold: 17
+  - 5745:
+      threshold: 18
+  - 5752:
+      threshold: 17
+  - 5760:
+      threshold: 17
+  - 5765:
+      threshold: 16
+  - 5769:
+      threshold: 17
+  - 5771:
+      threshold: 19
+  - 5773:
+      threshold: 17
+  - 5780:
+      threshold: 20
+  - 5785:
+      threshold: 17
+  - 5790:
+      threshold: 18
+  - 5800:
+      threshold: 18
+  - 5805:
+      threshold: 20
+  - 5806:
+      threshold: 18
+  - 5809:
+      threshold: 19
+  - 5813:
+      threshold: 16
+  - 5820:
+      threshold: 16
+  - 5825:
+      threshold: 17
+  - 5828:
+      threshold: 16
+  - 5840:
+      threshold: 21
+  - 5843:
+      threshold: 21
+  - 5845:
+      threshold: 21
+  - 5847:
+      threshold: 20
+  - 5853:
+      threshold: 20
+  - 5860:
+      threshold: 20
+  - 5865:
+      threshold: 19
+  - 5866:
+      threshold: 17
+  - 5880:
+      threshold: 18
+  - 5885:
+      threshold: 17
+  - 5893:
+      threshold: 16
+  - 5905:
+      threshold: 17
+  - 5917:
+      threshold: 16
+  - 5925:
+      threshold: 15
+  - 5933:
+      threshold: 15
+  - 5945:
+      threshold: 15
+  - 6002:
+      threshold: 15
+  - 6028:
+      threshold: 15
+fpv_scope_default_values:
+  1G2:
+    fpv_coeff:
+    - 10
+    - 450
+    rssi:
+    - 890
+    - 1600
+  3G3:
+    fpv_coeff:
+    - 10
+    - 450
+    rssi:
+    - 500
+    - 1600
+  5G8:
+    fpv_coeff:
+    - 8
+    - 130
+    rssi:
+    - 660
+    - 1350

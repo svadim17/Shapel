@@ -126,12 +126,8 @@ class ConnectionSettingsWidget(QWidget):
         self.l_ip_address = QLabel('IP address')
         self.le_ip_address = QLineEdit()
         self.l_port_numb = QLabel('Port number')
-        self.cb_port_numb = QComboBox()
-        self.cb_port_numb.addItem('55555')
-        self.cb_port_numb.addItem('55556')
-        self.cb_port_numb.addItem('55557')
-        self.cb_port_numb.addItem('55558')
-        self.cb_port_numb.addItem('55559')
+        self.le_port_numb = QLineEdit()
+        self.le_port_numb.setText('55555')
         self.btn_check_tcp_connection = QPushButton('Check TCP')
         self.btn_check_tcp_connection.clicked.connect(self.btn_check_tcp_clicked)
         self.status_icon = QLabel()
@@ -148,6 +144,13 @@ class ConnectionSettingsWidget(QWidget):
         for cam in available_cameras:
             self.cb_camera.addItem(str(cam.description()), cam)
 
+        self.box_change_ip = QGroupBox('Change IP address')
+        self.le_new_ip = QLineEdit()
+        self.le_new_ip.setPlaceholderText('Enter new IP address')
+        self.le_new_port = QLineEdit()
+        self.le_new_port.setPlaceholderText('Enter new port')
+        self.btn_change_ip = QPushButton('Change')
+
     def add_widgets_to_layout(self):
         spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -157,7 +160,7 @@ class ConnectionSettingsWidget(QWidget):
         ip_layout.addWidget(self.le_ip_address)
         port_layout = QVBoxLayout()
         port_layout.addWidget(self.l_port_numb)
-        port_layout.addWidget(self.cb_port_numb)
+        port_layout.addWidget(self.le_port_numb)
         check_layout = QHBoxLayout()
         check_layout.addWidget(self.btn_check_tcp_connection)
         check_layout.addWidget(self.status_icon)
@@ -181,15 +184,23 @@ class ConnectionSettingsWidget(QWidget):
         box_timeout_layout.addWidget(self.spb_timeout)
         self.box_timeout.setLayout(box_timeout_layout)
 
-        left_layout = QVBoxLayout()
-        left_layout.addWidget(self.box_tcp)
-
         right_layout = QVBoxLayout()
         right_layout.addWidget(self.box_timeout)
         right_layout.addSpacing(10)
         right_layout.addWidget(self.box_camera)
         right_layout.addSpacing(10)
         right_layout.addWidget(self.box_detect_config)
+
+        box_change_ip_layout = QHBoxLayout()
+        box_change_ip_layout.addWidget(self.le_new_ip)
+        box_change_ip_layout.addWidget(self.le_new_port)
+        box_change_ip_layout.addWidget(self.btn_change_ip)
+        self.box_change_ip.setLayout(box_change_ip_layout)
+
+        left_layout = QVBoxLayout()
+        left_layout.addWidget(self.box_tcp)
+        left_layout.addSpacing(10)
+        left_layout.addWidget(self.box_change_ip)
 
         self.main_layout.addLayout(left_layout)
         self.main_layout.addSpacing(20)
@@ -229,22 +240,27 @@ class ConnectionSettingsWidget(QWidget):
         else:                   # fail
             self.status_icon.setPixmap(QPixmap('assets/icons/error.png'))
 
+    def update_tcp_parameters(self, status: bool):
+        if status:
+            self.le_ip_address.setText(self.le_new_ip.text())
+            self.le_port_numb.setText(self.le_new_port.text())
+
     def set_loading_icon(self):
         self.status_icon.setPixmap(QPixmap('assets/icons/loading.png'))
 
     def collect_conf(self):
-        connection_conf = {'serial': {'timeout': self.spb_timeout.value(),
-                                      'ip_address': self.le_ip_address.text(),
-                                      'port_numb': self.cb_port_numb.currentText()}}
+        connection_conf = {'connection': {'timeout': self.spb_timeout.value(),
+                                          'ip_address': self.le_ip_address.text(),
+                                           'port_numb': self.le_port_numb.text()}}
         return connection_conf
 
     def set_conf(self, conf: dict):
         try:
             self.spb_timeout.setValue(conf['timeout'])
             self.le_ip_address.setText(conf['ip_address'])
-            self.cb_port_numb.setCurrentText(conf['port_numb'])
-        except:
-            self.logger.error('Can\'t load serial conf')
+            self.le_port_numb.setText(conf['port_numb'])
+        except Exception as e:
+            self.logger.error(f'Can\'t load serial conf: {e}')
 
 
 class DebugWidget(QWidget):

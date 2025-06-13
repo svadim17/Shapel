@@ -1,7 +1,7 @@
 import pyqtgraph as pg
 import numpy as np
 from submodules import basic
-from PyQt5 import Qt
+from PyQt5 import Qt, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 from PyQt5.QtWidgets import *
@@ -15,10 +15,11 @@ class PelengWidget(QDockWidget, QWidget):
     def __init__(self, config, drons_config, logger_):
         super().__init__()
         self.logger = logger_
-        # self.setMaximumHeight(600)
-        self.setTitleBarWidget(QWidget())
+        self.setWindowTitle('Peleng')
         self.setWidget(QWidget(self))
         self.widget().setLayout(QVBoxLayout())
+        self.widget().layout().setContentsMargins(0, 0, 0, 0)
+        self.widget().layout().setSpacing(0)
 
         self.graphWindow = pg.GraphicsLayoutWidget()
         # self.graphWindow.setBackground(QtGui.QColor(100, 100, 100))
@@ -248,4 +249,8 @@ class PelengWidget(QDockWidget, QWidget):
     def change_view_levels_flag(self, status: bool):
         self.view_lvls_flag = status
 
-
+    def change_background_color(self, status: bool, numb_of_exceed_signals: list, new_btn_colors: list):
+        if status:
+            self.graphWindow.setBackground(QtGui.QColor(255, 0, 0, 70))
+        else:
+            self.graphWindow.setBackground(QtGui.QColor(0, 0, 0))

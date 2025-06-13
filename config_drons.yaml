@@ -1,5 +1,5 @@
 DJI_Mavic2_2_4:
-  name: Mavic2-2.4G
+  name: Mavic 2-2.4G
   gains:
   - 4
   - 4
@@ -13,7 +13,7 @@ DJI_Mavic2_2_4:
   - 72
   frequency: 2400
 DJI_Mavic3_2_4:
-  name: Mavic3-2.4G
+  name: DJI
   gains:
   - 4
   - 4
@@ -69,7 +69,7 @@ Xiaomi_2_4:
   - 180
   frequency: 2400
 MavicMini_2_4:
-  name: MavicMini-2.4G
+  name: Mavic Mini-2.4G
   gains:
   - 4
   - 4
@@ -83,7 +83,7 @@ MavicMini_2_4:
   - 17
   frequency: 2400
 DJI_Mavic2_5_8:
-  name: Mavic2-5.8G
+  name: Mavic 2-5.8G
   gains:
   - 4
   - 4
@@ -97,7 +97,7 @@ DJI_Mavic2_5_8:
   - 59
   frequency: 5800
 DJI_Mavic3_5_8:
-  name: Mavic3-5.8G
+  name: DJI
   gains:
   - 4
   - 4
@@ -153,7 +153,7 @@ Xiaomi_5_8:
   - 255
   frequency: 5800
 MavicMini_5_8:
-  name: MavicMini-5.8G
+  name: Mavic Mini-5.8G
   gains:
   - 4
   - 4

@@ -1,8 +1,8 @@
 connection:
-  timeout: 250
-  ip_address: 192.168.1.122
+  timeout: 20
+  ip_address: 192.168.150.196
   port_numb: '55555'
-threshold: 816
+threshold: 3132
 number_of_sectors: 6
 calibration_coefficients:
   2400:
@@ -33,25 +33,22 @@ view:
 log:
   viewed_messages: 30
 debug:
-  connection_type: Player
+  connection_type: TCP
   player_record: mavic24_2kruga.txt
   database_logging: true
-  warning_sound: beep_warning.mp3
+  warning_sound: rus_man.mp3
   levels_in_peleng: true
   average_levels_for_peleng: false
   average_spectrum: false
 data_char:
   accumulated_values: 400
-sensivity_coeff: 0.5
+sensivity_coeff: 0.3
 language: english
 widgets:
   levelWidget: true
   fpvVideoWidget: true
   fpvScopeWidget: true
-widgets_show:
-  levelWidget: true
-  fpvVideoWidget: true
-  fpvScopeWidget: true
+  recordCalibrationWidget: true
 configuration:
   frequencies:
     DJI_Mavic2_2_4:
