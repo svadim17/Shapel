@@ -122,7 +122,7 @@ class ConnectionSettingsWidget(QWidget):
         self.spb_timeout.setSingleStep(1)
         self.spb_timeout.setMaximum(5000)
 
-        self.box_tcp = QGroupBox('TCP connection')
+        self.box_tcp = QGroupBox('TCP (remote control)')
         self.l_ip_address = QLabel('IP address')
         self.le_ip_address = QLineEdit()
         self.l_port_numb = QLabel('Port number')
@@ -294,7 +294,7 @@ class DebugWidget(QWidget):
         for sound_name in self.get_all_files(dir=self.sound_path):
             self.cb_sound.addItem(sound_name)
         self.btn_play_sound = QPushButton()
-        self.btn_play_sound.setIcon(QIcon(r'assets/icons/play.png'))
+        self.btn_play_sound.setIcon(QIcon(r'assets/icons/play_sound.png'))
         self.btn_play_sound.setFixedSize(26, 26)
         self.btn_play_sound.clicked.connect(self.event_check_sound)
 

@@ -27,7 +27,7 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.24.5')
+        self.setWindowTitle('Shapel v25.24.7')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 

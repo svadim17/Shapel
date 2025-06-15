@@ -1,9 +1,10 @@
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (QDockWidget, QWidget, QVBoxLayout, QHBoxLayout,
-                             QApplication, QPushButton, QGridLayout, QLabel, QScrollArea, QFrame, QSizePolicy)
+                             QApplication, QPushButton, QGridLayout, QLabel, QScrollArea, QFrame, QSizePolicy, QDialog,
+                             QSpinBox)
 from PyQt5.QtMultimedia import QCameraInfo, QCamera
 from PyQt5.QtMultimediaWidgets import QCameraViewfinder
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QSize
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import LinearRegionItem
@@ -27,6 +28,9 @@ class FPVScopeWidget(QDockWidget, QWidget):
         print(self.freqs)
         self.fpv_coeff_values = np.random.uniform(0, 10, self.freqs_len)
         self.fpv_rssi_values = np.random.uniform(0, 5, self.freqs_len)
+
+        self.threshold_window = ThresholdWindow()
+        self.threshold_window.signal_new_threshold.connect(self.reset_threshold)
 
         self.central_widget = QWidget(self)
         self.setWidget(self.central_widget)
@@ -131,6 +135,14 @@ class FPVScopeWidget(QDockWidget, QWidget):
         legend.addItem(self.fpv_coeff_line, 'FPV Coeff')
         legend.addItem(self.rssi_line, 'RSSI')
 
+        self.btn_threshold = QPushButton()
+        self.btn_threshold.setIcon(QIcon(r'assets/icons/threshold.png'))
+        self.btn_threshold.setFixedSize(30, 30)
+        self.btn_threshold.clicked.connect(self.threshold_window.show)
+        proxy = pg.Qt.QtWidgets.QGraphicsProxyWidget()
+        proxy.setWidget(self.btn_threshold)
+        self.plot.scene().addItem(proxy)
+
     def add_background_regions(self):
         freq_ranges = [(1080, 1360), (3170, 3470), (4990, 6028)]
         colors = [(135, 255, 255, 30), (255, 135, 255, 30), (255, 255, 135, 30)]
@@ -153,6 +165,13 @@ class FPVScopeWidget(QDockWidget, QWidget):
 
     def update_thresholds(self, new_values: list):
         self.thresholds = new_values
+
+    def reset_threshold(self, new_threshold: int):
+        for i in range(len(self.thresholds)):
+            self.thresholds[i] = new_threshold
+        self.threshold_line.setData(x=self.x_indices, y=self.thresholds)
+        self.threshold_scatter.update_threshold(new_threshold=self.thresholds)
+        self.logger.info(f'Default threshold was changed on {new_threshold}')
 
     def on_upward_point_clicked(self, scatter, points):
         if not points:
@@ -248,7 +267,6 @@ class FPVScopeWidget(QDockWidget, QWidget):
         self.rssi_line.setData(self.x_indices, self.fpv_rssi_values)
 
 
-
 class DraggableScatter(pg.ScatterPlotItem):
     """ Создание интерактивных узлов порога """
     signal_new_thresholds = pyqtSignal(list)
@@ -288,6 +306,47 @@ class DraggableScatter(pg.ScatterPlotItem):
         self.dragged_point = None
         ev.accept()
         self.signal_new_thresholds.emit(self.y_data.tolist())
+
+    def update_threshold(self, new_threshold: list):
+        self.setData(x=self.x_data, y=new_threshold)
+        self.line_item.setData(x=self.x_data, y=new_threshold)
+
+
+class ThresholdWindow(QDialog):
+    signal_new_threshold = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Reset threshold')
+        self.create_controls()
+        self.add_widgets_to_layout()
+        self.setFixedWidth(220)
+
+    def create_controls(self):
+        self.l_threshold = QLabel('New threshold')
+        self.spb_threshold = QSpinBox()
+        self.spb_threshold.setFixedSize(QSize(100, 40))
+        self.spb_threshold.setRange(1, 100)
+        self.spb_threshold.setValue(25)
+        self.spb_threshold.setSingleStep(1)
+
+        self.btn_set_up = QPushButton('Set up')
+        self.btn_set_up.clicked.connect(self.btn_set_up_clicked)
+
+    def add_widgets_to_layout(self):
+        self.main_layout = QHBoxLayout()            # main window layout
+        self.setLayout(self.main_layout)
+
+        spb_layout = QVBoxLayout()
+        spb_layout.addWidget(self.l_threshold)
+        spb_layout.addWidget(self.spb_threshold)
+
+        self.main_layout.addLayout(spb_layout)
+        self.main_layout.addSpacing(10)
+        self.main_layout.addWidget(self.btn_set_up, alignment=Qt.AlignBottom)
+
+    def btn_set_up_clicked(self):
+        self.signal_new_threshold.emit(self.spb_threshold.value())
 
 
 if __name__ == '__main__':

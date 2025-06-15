@@ -251,6 +251,6 @@ class PelengWidget(QDockWidget, QWidget):
 
     def change_background_color(self, status: bool, numb_of_exceed_signals: list, new_btn_colors: list):
         if status:
-            self.graphWindow.setBackground(QtGui.QColor(255, 0, 0, 70))
+            self.graphWindow.setBackground(QtGui.QColor(255, 110, 110, 100))
         else:
             self.graphWindow.setBackground(QtGui.QColor(0, 0, 0))

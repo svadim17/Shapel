@@ -319,7 +319,7 @@ class Processor(QtCore.QObject):
             self.receive_counter += 1
             self.sig_progrBar_value.emit(self.receive_counter, self.numb_of_auto_receives)
         elif self.receive_counter == self.numb_of_auto_receives:
-            self.calculate_threshold()
+            # self.calculate_threshold()
             self.fit_signals_to_threshold()
             self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
 

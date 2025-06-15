@@ -35,17 +35,30 @@ class FpvScopeSettings(QDockWidget, QWidget):
         self.le_cur_freq.setMaximumWidth(100)
         self.le_cur_freq.setText('5325')
 
+        self.l_delay_on_max = QLabel('Delay on max')
+        self.spb_delay_on_max = QSpinBox()
+        self.spb_delay_on_max.setFixedSize(QSize(100, 40))
+        self.spb_delay_on_max.setRange(1, 15)
+        self.spb_delay_on_max.setValue(3)
+        self.spb_delay_on_max.setSingleStep(1)
+
     def add_widgets_to_layout(self):
+        radio_layout = QVBoxLayout()
+        radio_layout.addWidget(self.radio_btn_auto)
+        radio_layout.addWidget(self.radio_btn_manual)
+
         cur_freq_layout = QVBoxLayout()
         cur_freq_layout.setAlignment(Qt.AlignLeft)
         cur_freq_layout.addWidget(self.l_cur_freq)
         cur_freq_layout.addWidget(self.le_cur_freq)
 
-        radio_layout = QVBoxLayout()
-        radio_layout.addWidget(self.radio_btn_auto)
-        radio_layout.addWidget(self.radio_btn_manual)
+        delay_on_max_layout = QVBoxLayout()
+        delay_on_max_layout.addWidget(self.l_delay_on_max)
+        delay_on_max_layout.addWidget(self.spb_delay_on_max)
 
         self.main_layout.addLayout(radio_layout)
+        self.main_layout.addSpacing(10)
+        self.main_layout.addLayout(delay_on_max_layout)
         self.main_layout.addSpacing(10)
         self.main_layout.addLayout(cur_freq_layout)
 
