@@ -36,7 +36,7 @@ debug:
   connection_type: TCP
   player_record: mavic24_2kruga.txt
   database_logging: true
-  warning_sound: rus_man.mp3
+  warning_sound: digital_warning.mp3
   levels_in_peleng: true
   average_levels_for_peleng: false
   average_spectrum: false
@@ -46,9 +46,10 @@ sensivity_coeff: 0.3
 language: english
 widgets:
   levelWidget: true
-  fpvVideoWidget: true
+  fpvVideoWidget: false
   fpvScopeWidget: true
   recordCalibrationWidget: true
+  settingsConfiguration: true
 configuration:
   frequencies:
     DJI_Mavic2_2_4:

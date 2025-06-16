@@ -749,37 +749,43 @@ class SerialSpinTread(QtCore.QThread):
 
     def send_new_angle(self, angle: str):
         """Отправка команды на устройство"""
-        if not self.running or not self.serial_port or not self.serial_port.is_open:
-            self.logger.error("Cannot send command to spinner: port not open or thread not running")
-            return
-        try:
-            command = f"Angle:{angle}\r\n"
-            self.serial_port.write(command.encode())
-            self.logger.info(f"Command to spinner sent: {command.strip()}")
+        retries = 3
+        for attempt in range(retries):
+            if not self.running or not self.serial_port or not self.serial_port.is_open:
+                self.logger.error("Cannot send command to spinner: port not open or thread not running")
+                return
+            try:
+                self.serial_port.reset_input_buffer()
+                command = f"Angle:{angle}"
+                self.serial_port.write(command.encode())
+                self.logger.info(f"Command to spinner sent: {command.strip()}")
 
-            # Ждем ответ (например, 1 байт подтверждения)
-            start_time = time.time()
-            while self.serial_port.in_waiting == 0 and (time.time() - start_time) < 1.0:
-                self.msleep(50)
+                # Ждем ответ (например, 1 байт подтверждения)
+                start_time = time.time()
+                while self.serial_port.in_waiting == 0 and (time.time() - start_time) < 5.0:
+                    self.msleep(50)
 
-            if self.serial_port.in_waiting:
-                response = self.serial_port.read(1)
-                return response.hex() if response else None
-            else:
-                self.logger.warning("No response from spinner within timeout")
-                return None
+                if self.serial_port.in_waiting:
+                    response = self.serial_port.read(1)
+                    self.logger.info(f"Received response from spinner: {response.hex()}")
+                    return response.hex() if response else None
+                else:
+                    self.logger.warning("No response from spinner within timeout")
+            except Exception as e:
+                self.logger.error(f"Serial error during command: {str(e)}")
 
-        except Exception as e:
-            self.logger.error(f"Serial error during command: {str(e)}")
-            return None
+            if attempt < retries - 1:
+                self.msleep(500)
+        return None
 
     def set_port(self, port_name: str):
         self.port_name = port_name
 
     def open_serial_port(self):
         try:
-            self.serial_port = serial.Serial(port=self.port_name, baudrate=self.baudrate, timeout=1)
+            self.serial_port = serial.Serial(port=self.port_name, baudrate=self.baudrate, timeout=2)
             self.logger.success(f"Connected to spinner: {self.port_name}")
+            self.msleep(500)
             return True
         except serial.SerialException as e:
             self.logger.error(f"SerialException on open spinner port: {str(e)}")

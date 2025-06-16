@@ -49,9 +49,9 @@ class SettingsWidget(QWidget):
 
         self.database = DataBaseWidget(logger_=self.logger)
         self.tabWidget.addTab(self.database, 'Database')
-        self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
-        self.tabWidget.addTab(self.configuration, 'Configuration')
 
+        if self.conf['widgets']['settingsConfiguration']:
+            self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
 
     def dump_conf(self):
         try:
@@ -392,18 +392,22 @@ class ConfigurationWidget(QWidget):
 
     def __init__(self, configuration_conf: dict, logger_):
         super().__init__()
+        self.configuration_conf = configuration_conf
         self.logger = logger_
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
         self.number_of_drons = None
         self.dron_freq = {}
         self.dron_names = []
-        self.configuration_conf = configuration_conf['drons_freqs']
+        self.configuration_freqs_conf = configuration_conf['drons_freqs']
+
         self.read_freq_from_conf()
         self.changed_table_items = []
 
         # Create table of drones frequencies
         self.freq_out_table = QTableWidget()
+        self.freq_out_table.cellChanged.connect(self.table_item_changed)
+
 
         self.setup_table()
         self.set_data_to_table(data={0: [0, 0, 0, 0, 0, 0, 0, 0], 1: [0, 0, 0, 0, 0, 0, 0, 0],
@@ -417,10 +421,40 @@ class ConfigurationWidget(QWidget):
         self.create_buttons()
         self.add_to_layout()
 
+    def create_buttons(self):
+        self.main_label = QLabel('Frequency settings')
+
+        self.btn_read_file = QPushButton('Read from file')
+        self.btn_read_file.setFixedSize(155, 30)
+        self.btn_read_file.clicked.connect(self.set_data_to_table)
+
+        self.btn_read_controller = QPushButton('Read from controller')
+        self.btn_read_controller.setFixedSize(210, 30)
+
+        self.btn_write_file = QPushButton('Write to file')
+        self.btn_write_file.setFixedSize(140, 30)
+        self.btn_write_file.clicked.connect(self.write_data_to_file)
+
+        self.btn_write_controller = QPushButton('Write to controller')
+        self.btn_write_controller.setFixedSize(190, 30)
+        self.btn_write_controller.clicked.connect(self.write_data_to_controller)
+
+    def add_to_layout(self):
+        btns_layout = QHBoxLayout()
+        btns_layout.addWidget(self.btn_read_file)
+        btns_layout.addWidget(self.btn_read_controller)
+        btns_layout.addWidget(self.btn_write_file)
+        btns_layout.addWidget(self.btn_write_controller)
+
+        self.main_layout.addWidget(self.freq_out_table)
+        self.main_layout.addLayout(btns_layout)
+
     def read_freq_from_conf(self):
         try:
-            self.number_of_drons = len(self.configuration_conf)
-            for dron, value in self.configuration_conf.items():
+            with open('configuration.yaml', encoding='utf-8') as f4:
+                self.configuration_freqs_conf = dict(yaml.load(f4, Loader=yaml.SafeLoader))['drons_freqs']
+            self.number_of_drons = len(self.configuration_freqs_conf)
+            for dron, value in self.configuration_freqs_conf.items():
                 name = value['name']
                 values = value['frequencies']
                 self.dron_freq[name] = values
@@ -446,6 +480,7 @@ class ConfigurationWidget(QWidget):
         if data:            # if not empty
             pass
         elif not data:      # if empty
+            self.read_freq_from_conf()
             data = self.dron_freq
         column_counter = 0
         for value in data.values():
@@ -461,7 +496,7 @@ class ConfigurationWidget(QWidget):
     def write_data_to_file(self):
         for i in range(self.freq_out_table.columnCount()):
             values = []
-            for j in range(1, self.freq_out_table.rowCount()):
+            for j in range(self.freq_out_table.rowCount()):
                 values.append(self.freq_out_table.item(j, i).text())
             self.collect_configuration_conf(i, values)
         self.dump_configuration_conf()
@@ -477,41 +512,21 @@ class ConfigurationWidget(QWidget):
             new_name = name[:ind_space]
         return new_name
 
-    def create_buttons(self):
-        self.main_label = QLabel('Frequency settings')
-        self.btn_read_file = QPushButton('Read from file')
-        self.btn_read_file.setFixedSize(155, 30)
-        self.btn_read_controller = QPushButton('Read from controller')
-        self.btn_read_controller.setFixedSize(210, 30)
-        self.btn_write_file = QPushButton('Write to file')
-        self.btn_write_file.setFixedSize(140, 30)
-        self.btn_write_controller = QPushButton('Write to controller')
-        self.btn_write_controller.setFixedSize(190, 30)
-
-    def add_to_layout(self):
-        btns_layout = QHBoxLayout()
-        btns_layout.addWidget(self.btn_read_file)
-        btns_layout.addWidget(self.btn_read_controller)
-        btns_layout.addWidget(self.btn_write_file)
-        btns_layout.addWidget(self.btn_write_controller)
-
-        self.main_layout.addWidget(self.freq_out_table)
-        self.main_layout.addLayout(btns_layout)
-
     def collect_configuration_conf(self, i, values):
-        self.configuration_conf['frequencies'].update({list(self.configuration_conf['frequencies'].keys())[i]: values})
+        dron_name = list(self.configuration_freqs_conf.keys())[i]
+        self.configuration_freqs_conf[dron_name]['frequencies'] = values
 
     def dump_configuration_conf(self):
         with open('configuration.yaml', 'w') as f:
+            self.configuration_conf['drons_freqs'].update(self.configuration_freqs_conf)
             yaml.dump(self.configuration_conf, f, sort_keys=False)
 
     def update_configuration_conf(self):
         with open('configuration.yaml') as f4:
-            self.configuration_conf = dict(yaml.load(f4, Loader=yaml.SafeLoader))
+            self.configuration_freqs_conf = dict(yaml.load(f4, Loader=yaml.SafeLoader))
         self.read_freq_from_conf()
 
     def write_data_to_controller(self):
-
         new_freq_to_controller = {}
         for i in range(len(self.changed_table_items)):
             values = []

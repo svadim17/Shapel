@@ -20,6 +20,8 @@ class RecordCalibration(QDockWidget, QWidget):
         self.setWindowTitle('Record Calibration')
 
         self.spinner = SerialSpinTread(logger_)
+        self.spinner.signal_ready.connect(self.on_spinner_ready)  # Подключаем сигнал здесь
+        self.spinner.signal_spin_done.connect(self.on_angle_set_done)
 
         self.sectors = self.config['number_of_sectors']
         self.drons_names = [self.config_drons[key]['name'] for key in self.config_drons.keys()]
@@ -40,7 +42,6 @@ class RecordCalibration(QDockWidget, QWidget):
         self.accum_packet = [[] for _ in range(self.sectors)]
         self.accum_counter = 666
         self.accum_status = False
-        self.progressBar_counter = 0
 
         self.accum_norm_packet = [[] for _ in range(self.sectors)]
         self.accum_pelengs = []
@@ -63,21 +64,24 @@ class RecordCalibration(QDockWidget, QWidget):
             self.cb_type_of_drone.addItem(self.drons_names[i])
         self.cb_type_of_drone.currentTextChanged.connect(self.selected_drone_changed)
 
+        self.l_filename = QLabel('Filename')
+        self.le_filename = QLineEdit()
+
         self.l_selected_degree = QLabel('Selected degree')
         self.spb_degree = QSpinBox()
         self.spb_degree.setSuffix(' °')
         self.spb_degree.setFixedSize(QSize(120, 40))
-        self.spb_degree.setRange(0, 360)
+        self.spb_degree.setRange(-360, 360)
         self.spb_degree.setSingleStep(1)
         self.spb_degree.setValue(0)
         self.spb_degree.valueChanged.connect(self.selected_degree_changed)
 
         self.l_accum_numb = QLabel('Accumulation number')
         self.spb_accum_numb = QSpinBox()
-        self.spb_accum_numb.setFixedSize(QSize(120, 40))
+        # self.spb_accum_numb.setFixedSize(QSize(120, 40))
         self.spb_accum_numb.setRange(1, 50)
         self.spb_accum_numb.setSingleStep(1)
-        self.spb_accum_numb.setValue(10)
+        self.spb_accum_numb.setValue(5)
         self.spb_accum_numb.valueChanged.connect(self.accum_numb_changed)
 
         self.box_autospin = QGroupBox('Autospin settings')
@@ -96,8 +100,8 @@ class RecordCalibration(QDockWidget, QWidget):
         self.l_degree_step = QLabel('Degree step')
         self.spb_degree_step = QSpinBox()
         self.spb_degree_step.setSuffix(' °')
-        self.spb_degree_step.setFixedWidth(120)
-        self.spb_degree_step.setRange(0, 360)
+        # self.spb_degree_step.setFixedWidth(120)
+        self.spb_degree_step.setRange(-180, 180)
         self.spb_degree_step.setSingleStep(1)
         self.spb_degree_step.setValue(5)
 
@@ -126,19 +130,34 @@ class RecordCalibration(QDockWidget, QWidget):
         self.progressBar_norm.setStyleSheet("border: 2px solid grey;")
 
     def add_widgets_to_layout(self):
+        selected_drone_layout = QVBoxLayout()
+        selected_drone_layout.addWidget(self.l_type_of_drone)
+        selected_drone_layout.addWidget(self.cb_type_of_drone)
+
+        filename_layout = QVBoxLayout()
+        filename_layout.addWidget(self.l_filename)
+        filename_layout.addWidget(self.le_filename)
+
         selected_degree_layout = QVBoxLayout()
         selected_degree_layout.addWidget(self.l_selected_degree)
         selected_degree_layout.addWidget(self.spb_degree)
+
         accum_numb_layout = QVBoxLayout()
         accum_numb_layout.addWidget(self.l_accum_numb)
         accum_numb_layout.addWidget(self.spb_accum_numb)
+
+        first_line_layout = QHBoxLayout()
+        first_line_layout.addLayout(selected_drone_layout)
+        first_line_layout.addSpacing(50)
+        first_line_layout.addLayout(filename_layout)
+
         second_line_layout = QHBoxLayout()
         second_line_layout.addLayout(selected_degree_layout)
-        second_line_layout.addSpacing(20)
+        second_line_layout.addSpacing(50)
         second_line_layout.addLayout(accum_numb_layout)
+
         box_settings_layout = QVBoxLayout()
-        box_settings_layout.addWidget(self.l_type_of_drone)
-        box_settings_layout.addWidget(self.cb_type_of_drone)
+        box_settings_layout.addLayout(first_line_layout)
         box_settings_layout.addSpacing(10)
         box_settings_layout.addLayout(second_line_layout)
         self.box_settings.setLayout(box_settings_layout)
@@ -177,10 +196,7 @@ class RecordCalibration(QDockWidget, QWidget):
         self.main_layout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
     def chb_autospin_clicked(self, state):
-        if bool(state):
-            self.autospin_status = True
-        else:
-            self.autospin_status = False
+        self.autospin_status = bool(state)
 
     def selected_drone_changed(self, value: str):
         self.selected_drone = value
@@ -196,8 +212,6 @@ class RecordCalibration(QDockWidget, QWidget):
         if status:
             if self.autospin_status:
                 self.spinner.set_port(port_name=self.cb_port_name.currentText())
-                self.spinner.signal_ready.connect(self.on_spinner_ready)
-                self.spinner.signal_spin_done.connect(self.on_angle_set_done)
                 self.spinner.start()
             else:
                 self.start_accumulation()
@@ -205,6 +219,7 @@ class RecordCalibration(QDockWidget, QWidget):
             self.accum_status = False
             self.accum_norm_status = False
             self.auto_record_status = False
+            self.clear_accumulation()
             self.save_status.setText('Stopped')
             try:
                 self.spinner.stop()
@@ -214,15 +229,15 @@ class RecordCalibration(QDockWidget, QWidget):
     def on_spinner_ready(self):
         self.logger.success("Spinner is ready, sending angle...")
         angle = str(self.spb_degree.value())
-        QTimer.singleShot(200, lambda: self.spinner.signal_set_angle.emit(angle))
+        QTimer.singleShot(500, lambda: self.spinner.signal_set_angle.emit(angle))
 
     def on_angle_set_done(self, success: bool):
         if success:
             QTimer.singleShot(1000, self.start_accumulation)
         else:
             self.auto_record_status = False
-            self.save_status.setText('Failed to rotate spinner')
             self.btn_record.setChecked(False)
+            self.save_status.setText('Failed to rotate spinner')
 
     def start_accumulation(self):
         self.accum_status = True
@@ -265,6 +280,13 @@ class RecordCalibration(QDockWidget, QWidget):
                 self.logger.info('Acccumulation of input signals finished!')
                 self.on_accumulation_complete(is_norm=False)
 
+    def clear_accumulation(self):
+        for i in range(self.sectors):
+            self.accum_packet[i] = []
+            self.accum_packet[i] = []
+        self.progressBar.setValue(0)
+        self.progressBar_norm.setValue(0)
+
     def accumulate_norm_signals(self, packet: Packet_levels, pelengs: list):
         if self.accum_norm_status:
             antenna_index = int(packet.antenna) - 1
@@ -298,13 +320,12 @@ class RecordCalibration(QDockWidget, QWidget):
             # После сохранения – если автоспин активен, передвинуться и ждать готовности
             if self.auto_record_status:
                 new_degree = self.spb_degree.value() + self.spb_degree_step.value()
-                if new_degree > 360:
+                if new_degree > 360 or new_degree < -360:
                     self.auto_record_status = False
                     self.save_status.setText("Finished all degrees")
                     self.btn_record.setChecked(False)
                     self.logger.success(f'Finished to save all degrees!')
                     return
-
                 self.spb_degree.setValue(new_degree)
                 self.save_status.setText(f'Moving to {new_degree} degrees...')
                 self.spinner.signal_set_angle.emit(str(new_degree))
@@ -321,12 +342,13 @@ class RecordCalibration(QDockWidget, QWidget):
 
     def save_data_to_file(self, averaged_accum):
         try:
+            filename = datetime.now().strftime(f"{self.le_filename.text()} %d-%m-%y") + '.txt'
             if not os.path.isdir('calibration_records'):
                 os.mkdir('calibration_records')
-            if os.path.isfile('calibration_records/' + datetime.now().strftime("calibr_record %d-%m-%y") + '.txt'):
-                self.record_file = open('calibration_records/' + datetime.now().strftime("calibr_record %d-%m-%y") + '.txt', 'a')
+            if os.path.isfile('calibration_records/' + filename):
+                self.record_file = open('calibration_records/' + filename, 'a')
             else:
-                self.record_file = open('calibration_records/' + datetime.now().strftime("calibr_record %d-%m-%y") + '.txt', 'w')
+                self.record_file = open('calibration_records/' + filename, 'w')
 
             # dict_to_save = {f'{self.selected_degree}': averaged_accum}
             data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}'
@@ -342,14 +364,14 @@ class RecordCalibration(QDockWidget, QWidget):
 
     def save_norm_data_to_file(self, averaged_accum, peleng):
         try:
+            filename = datetime.now().strftime(f"{self.le_filename.text()}_norm %d-%m-%y") + '.txt'
+
             if not os.path.isdir('calibration_records'):
                 os.mkdir('calibration_records')
-            if os.path.isfile('calibration_records/' + datetime.now().strftime("norm_calibr_record %d-%m-%y") + '.txt'):
-                self.record_file = open(
-                    'calibration_records/' + datetime.now().strftime("norm_calibr_record %d-%m-%y") + '.txt', 'a')
+            if os.path.isfile('calibration_records/' + filename):
+                self.record_file = open('calibration_records/' + filename, 'a')
             else:
-                self.record_file = open(
-                    'calibration_records/' + datetime.now().strftime("norm_calibr_record %d-%m-%y") + '.txt', 'w')
+                self.record_file = open('calibration_records/' + filename, 'w')
 
             # dict_to_save = {f'{self.selected_degree}': averaged_accum}
             data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}\t{peleng}'

@@ -36,7 +36,7 @@ drons_freqs:
     - '0'
     - '0'
     - '0'
-    name: Mavic3
+    name: DJI
   Autel:
     frequencies:
     - '100'

@@ -27,7 +27,7 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.24.7')
+        self.setWindowTitle('Shapel v25.25.1.3')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -64,6 +64,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.init_fpvScopeWidget()
         if self.recordCalibrationWidget_status:
             self.init_recordCalibrationWidget()
+        if self.settingsConfiguration_status:
+            self.init_settingsConfiguration()
         self.init_dataBase_logging()
 
         self.connection = None
@@ -79,6 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fpvVideoWidget_status = bool(self.settingsWidget.conf['widgets']['fpvVideoWidget'])
         self.fpvScopeWidget_status = bool(self.settingsWidget.conf['widgets']['fpvScopeWidget'])
         self.recordCalibrationWidget_status = bool(self.settingsWidget.conf['widgets']['recordCalibrationWidget'])
+        self.settingsConfiguration_status = bool(self.settingsWidget.conf['widgets']['settingsConfiguration'])
 
         self.DataBaseLog_flag = True
 
@@ -177,7 +180,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_recordCalibrationWidget(self):
         self.recordCalibrationWidget = RecordCalibration(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
 
-
+    def init_settingsConfiguration(self):
+        self.settingsWidget.tabWidget.addTab(self.settingsWidget.configuration, 'Configuration')
 
     def init_dataBase_logging(self):
         if not self.DataBaseLog_flag:
@@ -219,18 +223,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fpvVideoWidget.setMinimumHeight(300)
             self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvVideoWidget)
 
-            self.fpvScopeSettingsWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            self.fpvScopeSettingsWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-            self.fpvScopeSettingsWidget.setMaximumHeight(100)
-            self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvScopeSettingsWidget)
-            self.splitDockWidget(self.fpvVideoWidget, self.fpvScopeSettingsWidget, Qt.Vertical)
-
         if self.recordCalibrationWidget_status:
             self.recordCalibrationWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             self.recordCalibrationWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
             self.recordCalibrationWidget.setMaximumWidth(500)
             if self.fpvVideoWidget_status:
                 self.tabifyDockWidget(self.fpvVideoWidget, self.recordCalibrationWidget)
+            else:
+                self.addDockWidget(Qt.LeftDockWidgetArea, self.recordCalibrationWidget)
 
         # Threshold Dock
         self.addDockWidget(Qt.RightDockWidgetArea, self.thresholdDock)
@@ -249,6 +249,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fpvScopeWidget.setMaximumHeight(550)
             self.fpvScopeWidget.setMinimumHeight(300)
             self.addDockWidget(Qt.BottomDockWidgetArea, self.fpvScopeWidget)
+
+            self.fpvScopeSettingsWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            self.fpvScopeSettingsWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            self.fpvScopeSettingsWidget.setMaximumHeight(100)
+            self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvScopeSettingsWidget)
+            if self.fpvVideoWidget_status:
+                self.splitDockWidget(self.fpvVideoWidget, self.fpvScopeSettingsWidget, Qt.Vertical)
 
     def set_connection_type(self, mode='emulation'):
         if self.connection is not None:
@@ -345,7 +352,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.fpvScopeWidget_status:
             self.connection.signal_fpvScope_packet.connect(self.fpvScopeWidget.update_graph)
 
-
+        if self.settingsConfiguration_status:
+            self.connection.signal_frequencies.connect(self.settingsWidget.configuration.set_data_to_table)
+            self.settingsWidget.configuration.btn_read_controller.clicked.connect(
+                lambda: self.connection.send_cmd_for_change_mode(CtrlMode.frequencies, type='freq'))
+            self.settingsWidget.configuration.signal_freq_to_controller.connect(self.connection.send_new_freq_to_controller)
 
     def change_threshold(self, value):
         self.slider_threshold.setValue(value)
@@ -379,7 +390,12 @@ if __name__ == '__main__':
                                                                               "background-color: #ffff99;"
                                                                               "color: #000000;"
                                                                               "border: 1px solid #000000;"
-                                                                              "padding: 2px;}")
+                                                                              "padding: 2px;}"
+                                                                              
+                                                                              "QCheckBox::indicator { "
+                                                                              "width: 22px; "
+                                                                              "height: 22px; "
+                                                                              "}")
 
     main_window = MainWindow()
     main_window.show()

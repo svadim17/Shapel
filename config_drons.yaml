@@ -13,7 +13,7 @@ DJI_Mavic2_2_4:
   - 72
   frequency: 2400
 DJI_Mavic3_2_4:
-  name: DJI
+  name: DJI-2.4G
   gains:
   - 4
   - 4
@@ -97,7 +97,7 @@ DJI_Mavic2_5_8:
   - 59
   frequency: 5800
 DJI_Mavic3_5_8:
-  name: DJI
+  name: DJI-5.8G
   gains:
   - 4
   - 4
