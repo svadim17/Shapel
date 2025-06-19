@@ -11,7 +11,7 @@ class FpvScopeSettings(QDockWidget, QWidget):
         super().__init__()
         self.logger = logger_
 
-        self.setWindowTitle('FPV Scope settings')
+        self.setWindowTitle(self.tr('FPV Scope settings'))
         self.setWidget(QWidget())
 
         self.main_layout = QHBoxLayout()  # create vertical layout for buttons
@@ -21,21 +21,22 @@ class FpvScopeSettings(QDockWidget, QWidget):
         self.create_widgets()
         self.add_widgets_to_layout()
 
+
     def create_widgets(self):
-        self.radio_btn_auto = QRadioButton('Auto mode')
+        self.radio_btn_auto = QRadioButton(self.tr('Auto mode'))
         self.radio_btn_auto.setChecked(True)
-        self.radio_btn_manual = QRadioButton('Manual mode')
+        self.radio_btn_manual = QRadioButton(self.tr('Manual mode'))
 
         self.radio_btn_auto.toggled.connect(self.btn_radio_changed)
         self.radio_btn_manual.toggled.connect(self.btn_radio_changed)
 
-        self.l_cur_freq = QLabel('Current frequency')
+        self.l_cur_freq = QLabel(self.tr('Current frequency'))
         self.le_cur_freq = QLineEdit()
         self.le_cur_freq.setReadOnly(True)
         self.le_cur_freq.setMaximumWidth(100)
         self.le_cur_freq.setText('5325')
 
-        self.l_delay_on_max = QLabel('Delay on max')
+        self.l_delay_on_max = QLabel(self.tr('Delay on max [s]'))
         self.spb_delay_on_max = QSpinBox()
         self.spb_delay_on_max.setFixedSize(QSize(100, 40))
         self.spb_delay_on_max.setRange(1, 15)

@@ -1,5 +1,6 @@
+language: 'ru'
 connection:
-  timeout: 20
+  timeout: 200
   ip_address: 192.168.150.196
   port_numb: '55555'
 threshold: 3132
@@ -33,17 +34,16 @@ view:
 log:
   viewed_messages: 30
 debug:
-  connection_type: TCP
+  connection_type: Player
   player_record: mavic24_2kruga.txt
   database_logging: true
-  warning_sound: digital_warning.mp3
+  warning_sound: alert.mp3
   levels_in_peleng: true
   average_levels_for_peleng: false
   average_spectrum: false
 data_char:
   accumulated_values: 400
 sensivity_coeff: 0.3
-language: english
 widgets:
   levelWidget: true
   fpvVideoWidget: false

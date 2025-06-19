@@ -11,7 +11,7 @@ class FPVVideoWidget(QDockWidget, QWidget):
     def __init__(self, camera, logger_):
         super().__init__()
         self.logger = logger_
-        self.setWindowTitle('FPV Video')
+        self.setWindowTitle(self.tr('FPV Video'))
 
         self.setWidget(QWidget())
         self.main_layout = QVBoxLayout()  # create vertical layout for buttons

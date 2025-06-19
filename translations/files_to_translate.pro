@@ -1,0 +1,2 @@
+SOURCES += ../main.py ../submodules/calibration.py ../submodules/drons.py ../submodules/fpv_scope.py ../submodules/fpv_scope_settings.py ../submodules/fpv_video.py ../submodules/peleng.py ../submodules/radar.py ../submodules/record_calibration.py ../submodules/settings.py
+TRANSLATIONS += shapel_en.ts shapel_ru.ts

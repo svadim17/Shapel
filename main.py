@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QAction, QToolBar, QTabWidget, QSizePolicy, QSlider, \
     QPushButton, QDockWidget, QVBoxLayout, QMainWindow
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTranslator
 from loguru import logger
 import qdarktheme
 import yaml
@@ -27,7 +27,7 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.25.1.3')
+        self.setWindowTitle('Shapel v25.25.4')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -86,12 +86,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.DataBaseLog_flag = True
 
     def create_actions(self):
-        self.act_start = QAction('Start')
+        self.act_start = QAction(self.tr('Start'))
         self.act_start.setIcon(QIcon(f'assets/icons/btn_start.png'))
         self.act_start.setCheckable(True)
         self.act_start.triggered.connect(self.change_connection_state)
 
-        self.act_settings = QAction('Settings')
+        self.act_settings = QAction(self.tr('Settings'))
         self.act_settings.setIcon(QIcon(f'assets/icons/btn_settings.png'))
         self.act_settings.triggered.connect(self.settingsWidget.show)
 
@@ -100,13 +100,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_auto_threshold.setFixedSize(28, 28)
         self.btn_auto_threshold.clicked.connect(self.calibrationWidget.open_calibration_window)
 
-        self.act_sound = QAction('Sound')
+        self.act_sound = QAction(self.tr('Sound'))
         self.act_sound.setIcon(QIcon(f'assets/icons/sound_on.png'))
         self.act_sound.setCheckable(True)
         self.act_sound.triggered.connect(self.enable_sound)
 
     def create_toolbar(self):
-        self.toolBar = QToolBar('Toolbar')
+        self.toolBar = QToolBar(self.tr('Toolbar'))
         self.toolBar.addAction(self.act_start)
         self.toolBar.addAction(self.act_settings)
         spacer = QWidget()
@@ -153,7 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pelengWidget = PelengWidget(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
         self.pelengWidget.change_view_levels_flag(self.settingsWidget.debug.chb_peleng_level.checkState())
         self.processor.sig_peleng.connect(self.pelengWidget.draw_peleng)
-        self.processor.sig_warning.connect(self.pelengWidget.change_background_color)
+        # self.processor.sig_warning.connect(self.pelengWidget.change_background_color)
         self.settingsWidget.debug.chb_average_peleng.clicked.connect(self.processor.change_average_flag)
         self.slider_threshold.valueChanged.connect(self.pelengWidget.change_threshold)
         self.dronesWidget.signal_drons_config_changed.connect(lambda drons_conf:
@@ -181,7 +181,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.recordCalibrationWidget = RecordCalibration(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
 
     def init_settingsConfiguration(self):
-        self.settingsWidget.tabWidget.addTab(self.settingsWidget.configuration, 'Configuration')
+        self.settingsWidget.tabWidget.addTab(self.settingsWidget.configuration, self.tr('Configuration'))
 
     def init_dataBase_logging(self):
         if not self.DataBaseLog_flag:
@@ -376,6 +376,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.processor.sig_warning_database.disconnect(self.DataBaseLog.append_table)
 
 
+def load_translator(app, language):
+    translator = QTranslator()
+    # Путь к файлу перевода
+    translation_file = os.path.join('translations', f'shapel_{language}.qm')
+    if os.path.exists(translation_file):
+        translator.load(translation_file)
+        app.installTranslator(translator)
+        return translator
+    return None
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     font = QFont("Arial", 10)
@@ -396,7 +407,9 @@ if __name__ == '__main__':
                                                                               "width: 22px; "
                                                                               "height: 22px; "
                                                                               "}")
-
+    with open('config.yaml') as f:
+        conf = dict(yaml.load(f, Loader=yaml.SafeLoader))
+    translator = load_translator(app=app, language=conf['language'])
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec())

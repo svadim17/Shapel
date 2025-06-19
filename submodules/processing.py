@@ -21,6 +21,7 @@ class Processor(QtCore.QObject):
     sig_progrBar_value = pyqtSignal(int, int)
     sig_drons_config_changed = pyqtSignal(dict)
     sig_norm_levels_and_pelengs = pyqtSignal(Packet_levels, list)
+    sig_exceeded_sectors = pyqtSignal(list)
 
     def __init__(self, config: dict, dron_config: dict, logger_):
         super().__init__()
@@ -43,9 +44,6 @@ class Processor(QtCore.QObject):
         self.numb_of_auto_receives = 0
         self.no_warning_counter = 0
         self.no_warning_comparator = 50    # counter comparing with comparator to refresh buttons colors
-        # self.numb_of_auto_receives = int(self.calibration_time / self.time_for_one_receive)
-        # while self.numb_of_auto_receives % 6 != 0:
-        #     self.numb_of_auto_receives += 1
 
     def change_average_flag(self, state: bool):
         self.averaging_levels_flag = state
@@ -61,7 +59,7 @@ class Processor(QtCore.QObject):
         self.b_58 = self.config['peleng_coefficients'][58]['b']
         self.averaging_levels_flag = self.config['debug']['average_levels_for_peleng']
         self.sensivity_coeff = self.config['sensivity_coeff']
-        #self.calibration_time = self.config['debug']['calibration_time']
+        # self.calibration_time = self.config['debug']['calibration_time']
 
     def get_drons_config(self, conf: dict):
         self.config_drons = conf
@@ -72,9 +70,6 @@ class Processor(QtCore.QObject):
 
     def change_threshold(self, value: int):
         self.threshold = value
-
-    def change_sensivity_coeff(self, value: int):
-        self.sensivity_coeff = value
 
     def change_calibration_time(self, value):
         self.calibration_time = value
@@ -260,7 +255,6 @@ class Processor(QtCore.QObject):
                 if self.no_warning_counter == self.no_warning_comparator:
                     self.sig_warning.emit(False, [], [])
                     self.no_warning_counter = 0
-
             i += 1
 
         if len(pelengs_filtered):
@@ -277,9 +271,11 @@ class Processor(QtCore.QObject):
                 max_peleng_power = peleng.power
         self.sig_warning_sound.emit(max_peleng_power)
 
-    def calculate_threshold(self):
-        self.threshold = int(max(max(self.receive_accum, key=max)))
-        self.sig_auto_threshold.emit(self.threshold)
+    def find_exceeded_sectors(self, pelengs: list[Peleng]):
+        exceeded_sectors = []
+        for peleng in pelengs:
+            exceeded_sectors.append(int((peleng.angle) // (360 / self.sectors)))
+        self.sig_exceeded_sectors.emit(exceeded_sectors)
 
     def reset_receive_counter(self):
         self.logger.info('Calibration started')
@@ -306,6 +302,16 @@ class Processor(QtCore.QObject):
 
         self.send_calibration_coeff()
 
+    def auto_calibration(self, ampl_levels):
+        # # # Calibration # # #
+        if self.receive_counter < self.numb_of_auto_receives:                   # counter for every antenna
+            self.receive_accum.append(ampl_levels)
+            self.receive_counter += 1
+            self.sig_progrBar_value.emit(self.receive_counter, self.numb_of_auto_receives)
+        elif self.receive_counter == self.numb_of_auto_receives:
+            self.fit_signals_to_threshold()
+            self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
+
     @pyqtSlot(Packet_levels)
     def receive_levels(self, packet: Packet_levels):
         if self.record_flag:
@@ -313,18 +319,11 @@ class Processor(QtCore.QObject):
         norm_lvls = self.normalize_levels(packet)
         ampl_lvls = self.amplifying_levels(copy.deepcopy(norm_lvls))
 
-        # # # Auto-determine threshold and extra gains # # #
-        if self.receive_counter < self.numb_of_auto_receives:                   # counter for every antenna
-            self.receive_accum.append(ampl_lvls.values)
-            self.receive_counter += 1
-            self.sig_progrBar_value.emit(self.receive_counter, self.numb_of_auto_receives)
-        elif self.receive_counter == self.numb_of_auto_receives:
-            # self.calculate_threshold()
-            self.fit_signals_to_threshold()
-            self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
-
+        self.auto_calibration(ampl_levels=ampl_lvls.values)     # calibration
         self.sig_sector_levels.emit(Sector_levels(ampl_lvls.antenna, self.drones_name, self.colors, ampl_lvls.values))
         self.average_levels(ampl_lvls)
+
+        # Process pelengs
         if ampl_lvls.antenna == self.sectors:
             pelengs = self.calculate_peleng(self.find_sectors_for_peleng())
             if self.averaging_pelengs_flag:

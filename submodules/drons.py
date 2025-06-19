@@ -14,7 +14,7 @@ class DronsCtrlWidget(QDockWidget, QWidget):
 
     def __init__(self, drons: list, threshold: int):
         super().__init__()
-        self.setWindowTitle('Drones')
+        self.setWindowTitle(self.tr('Drones'))
         self.setWidget(QWidget())
 
         # drons.pop(0)
@@ -67,8 +67,8 @@ class DronsCtrlWidget(QDockWidget, QWidget):
             self.color_rect[i].setFixedSize(17, 33)
 
     def add_widgets_to_layout(self):
-        self.box_2g4 = QGroupBox('2.4 GHz')
-        self.box_5g8 = QGroupBox('5.8 GHz')
+        self.box_2g4 = QGroupBox(self.tr('2.4 GHz'))
+        self.box_5g8 = QGroupBox(self.tr('5.8 GHz'))
 
         btns_24_layout = QVBoxLayout()
         btns_24_layout.setAlignment(Qt.AlignTop)
@@ -141,7 +141,7 @@ class Drons_detect_settings(QDialog):
     def __init__(self, dron: Dron):
         super().__init__()
         self.dron = dron
-        self.setWindowTitle(self.dron.name + ' |  Gain')
+        self.setWindowTitle(self.dron.name + self.tr(' |  Gain'))
         self.setFixedSize(QSize(270, 370))
         # self.move(40, 100)
         sliders_layout = QVBoxLayout()
@@ -184,7 +184,7 @@ class Drons_detect_settings(QDialog):
             sliders_layout.addLayout(self.slider_layout[i])
 
         # Add reset gain controls
-        self.l_spb_reset = QLabel('All gains')
+        self.l_spb_reset = QLabel(self.tr('All gains'))
         self.spb_reset_gain = QSpinBox()
         self.spb_reset_gain.setFixedSize(70, 30)
         self.spb_reset_gain.setRange(0, 200)

@@ -17,7 +17,7 @@ class RecordCalibration(QDockWidget, QWidget):
         self.config = config
         self.config_drons = drons_config
         self.logger = logger_
-        self.setWindowTitle('Record Calibration')
+        self.setWindowTitle(self.tr('Record Calibration'))
 
         self.spinner = SerialSpinTread(logger_)
         self.spinner.signal_ready.connect(self.on_spinner_ready)  # Подключаем сигнал здесь
@@ -56,18 +56,18 @@ class RecordCalibration(QDockWidget, QWidget):
         self.event_update_ports_name()
 
     def create_controls(self):
-        self.box_settings = QGroupBox('Main settings')
+        self.box_settings = QGroupBox(self.tr('Main settings'))
 
-        self.l_type_of_drone = QLabel('Selected drone')
+        self.l_type_of_drone = QLabel(self.tr('Selected drone'))
         self.cb_type_of_drone = QComboBox()
         for i in range(self.number_of_drons):
             self.cb_type_of_drone.addItem(self.drons_names[i])
         self.cb_type_of_drone.currentTextChanged.connect(self.selected_drone_changed)
 
-        self.l_filename = QLabel('Filename')
+        self.l_filename = QLabel(self.tr('Filename'))
         self.le_filename = QLineEdit()
 
-        self.l_selected_degree = QLabel('Selected degree')
+        self.l_selected_degree = QLabel(self.tr('Selected degree'))
         self.spb_degree = QSpinBox()
         self.spb_degree.setSuffix(' °')
         self.spb_degree.setFixedSize(QSize(120, 40))
@@ -76,7 +76,7 @@ class RecordCalibration(QDockWidget, QWidget):
         self.spb_degree.setValue(0)
         self.spb_degree.valueChanged.connect(self.selected_degree_changed)
 
-        self.l_accum_numb = QLabel('Accumulation number')
+        self.l_accum_numb = QLabel(self.tr('Accumulation number'))
         self.spb_accum_numb = QSpinBox()
         # self.spb_accum_numb.setFixedSize(QSize(120, 40))
         self.spb_accum_numb.setRange(1, 50)
@@ -84,9 +84,9 @@ class RecordCalibration(QDockWidget, QWidget):
         self.spb_accum_numb.setValue(5)
         self.spb_accum_numb.valueChanged.connect(self.accum_numb_changed)
 
-        self.box_autospin = QGroupBox('Autospin settings')
+        self.box_autospin = QGroupBox(self.tr('Autospin settings'))
 
-        self.l_port_name = QLabel("Port name")
+        self.l_port_name = QLabel(self.tr('Port name'))
         self.cb_port_name = QComboBox()
         self.cb_port_name.setFixedWidth(120)
         self.btn_update_port_name = QPushButton()
@@ -94,10 +94,10 @@ class RecordCalibration(QDockWidget, QWidget):
         self.btn_update_port_name.setFixedSize(26, 26)
         self.btn_update_port_name.clicked.connect(self.event_update_ports_name)
 
-        self.btn_close_port = QPushButton('Close COM port')
+        self.btn_close_port = QPushButton(self.tr('Close COM port'))
         self.btn_close_port.clicked.connect(self.spinner.close_serial_port)
 
-        self.l_degree_step = QLabel('Degree step')
+        self.l_degree_step = QLabel(self.tr('Degree step'))
         self.spb_degree_step = QSpinBox()
         self.spb_degree_step.setSuffix(' °')
         # self.spb_degree_step.setFixedWidth(120)
@@ -105,12 +105,12 @@ class RecordCalibration(QDockWidget, QWidget):
         self.spb_degree_step.setSingleStep(1)
         self.spb_degree_step.setValue(5)
 
-        self.l_chb_autospin = QLabel('Autospin')
+        self.l_chb_autospin = QLabel(self.tr('Autospin'))
         self.chb_autospin = QCheckBox()
         self.chb_autospin.setChecked(False)
         self.chb_autospin.stateChanged.connect(self.chb_autospin_clicked)
 
-        self.btn_record = QPushButton('Record')
+        self.btn_record = QPushButton(self.tr('Record'))
         self.btn_record.setFixedSize(QSize(120, 30))
         self.btn_record.setCheckable(True)
         self.btn_record.clicked.connect(self.btn_record_clicked)
@@ -220,7 +220,7 @@ class RecordCalibration(QDockWidget, QWidget):
             self.accum_norm_status = False
             self.auto_record_status = False
             self.clear_accumulation()
-            self.save_status.setText('Stopped')
+            self.save_status.setText(self.tr('Stopped'))
             try:
                 self.spinner.stop()
             except Exception as e:
@@ -237,13 +237,13 @@ class RecordCalibration(QDockWidget, QWidget):
         else:
             self.auto_record_status = False
             self.btn_record.setChecked(False)
-            self.save_status.setText('Failed to rotate spinner')
+            self.save_status.setText(self.tr('Failed to rotate spinner'))
 
     def start_accumulation(self):
         self.accum_status = True
         self.accum_norm_status = True
         self.auto_record_status = True
-        self.save_status.setText('Saving...')
+        self.save_status.setText(self.tr('Saving...'))
 
     def event_update_ports_name(self):
         self.cb_port_name.clear()
@@ -322,12 +322,12 @@ class RecordCalibration(QDockWidget, QWidget):
                 new_degree = self.spb_degree.value() + self.spb_degree_step.value()
                 if new_degree > 360 or new_degree < -360:
                     self.auto_record_status = False
-                    self.save_status.setText("Finished all degrees")
+                    self.save_status.setText(self.tr("Circle finished!"))
                     self.btn_record.setChecked(False)
                     self.logger.success(f'Finished to save all degrees!')
                     return
                 self.spb_degree.setValue(new_degree)
-                self.save_status.setText(f'Moving to {new_degree} degrees...')
+                self.save_status.setText(self.tr('Moving to degree: '), new_degree)
                 self.spinner.signal_set_angle.emit(str(new_degree))
 
     def average_accumulation(self, data):
@@ -356,11 +356,11 @@ class RecordCalibration(QDockWidget, QWidget):
             print(data_to_save)
             self.record_file.write(f'{data_to_save}\n')
             self.record_file.close()
-            self.save_status.setText('Successful saved!')
+            self.save_status.setText(self.tr('Successful saved!'))
             logger.success('Calibration data saved successful')
         except Exception as e:
             logger.error(f'Error with save calibration data: {e}')
-            self.save_status.setText('ERROR !')
+            self.save_status.setText(self.tr('ERROR !'))
 
     def save_norm_data_to_file(self, averaged_accum, peleng):
         try:
@@ -379,8 +379,8 @@ class RecordCalibration(QDockWidget, QWidget):
             print(data_to_save)
             self.record_file.write(f'{data_to_save}\n')
             self.record_file.close()
-            self.save_status.setText('Successful saved!')
+            self.save_status.setText(self.tr('Successful saved!'))
             logger.success('Calibration data saved successful')
         except Exception as e:
             logger.error(f'Error with save calibration data: {e}')
-            self.save_status.setText('ERROR !')
+            self.save_status.setText(self.tr('ERROR !'))

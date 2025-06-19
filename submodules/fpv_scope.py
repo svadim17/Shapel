@@ -1,3 +1,4 @@
+from PyQt5 import Qt, QtGui
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (QDockWidget, QWidget, QVBoxLayout, QHBoxLayout,
                              QApplication, QPushButton, QGridLayout, QLabel, QScrollArea, QFrame, QSizePolicy, QDialog,
@@ -17,7 +18,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
     def __init__(self, configuration_conf: dict, logger_):
         super().__init__()
         self.logger = logger_
-        self.setWindowTitle('FPV Scope')
+        self.setWindowTitle(self.tr('FPV Scope'))
         self.configuration_conf = configuration_conf
         self.freqs_dict = configuration_conf['fpv_scope_frequencies']
         self.fpv_default_values = configuration_conf['fpv_scope_default_values']
@@ -62,10 +63,10 @@ class FPVScopeWidget(QDockWidget, QWidget):
 
     def create_graph(self):
         self.graphWindow = pg.GraphicsLayoutWidget()
-        self.graphWindow.setWindowTitle('Frequencies')
+        self.graphWindow.setWindowTitle(self.tr('Frequencies'))
         self.plot = self.graphWindow.addPlot()
         self.plot.vb.setMouseEnabled(x=False, y=False)
-        self.plot.setLabel('bottom', 'Frequency (MHz)')
+        self.plot.setLabel('bottom', self.tr('Frequency (MHz)'))
         self.plot.setLabel('left', 'Value (%)')
         self.plot.setYRange(-2, 102)
 
@@ -90,7 +91,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
             x=self.x_indices,
             y=self.fpv_coeff_values,
             pen=pg.mkPen(color='b', width=2),
-            name='Upward values'
+            name='FPV coeff'
         )
         self.plot.addItem(self.fpv_coeff_line)
 
@@ -110,7 +111,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
             x=self.x_indices,
             y=self.fpv_rssi_values,
             pen=pg.mkPen(color='y', width=2),
-            name='Downward values'
+            name='RSSI'
         )
         self.plot.addItem(self.rssi_line)
 
@@ -131,9 +132,9 @@ class FPVScopeWidget(QDockWidget, QWidget):
         # Легенда
         legend = pg.LegendItem((100, 80), offset=(60, 1))
         legend.setParentItem(self.plot)
-        legend.addItem(self.threshold_line, 'Threshold')
-        legend.addItem(self.fpv_coeff_line, 'FPV Coeff')
-        legend.addItem(self.rssi_line, 'RSSI')
+        legend.addItem(self.threshold_line, self.tr('Threshold'))
+        legend.addItem(self.fpv_coeff_line, self.tr('FPV Coeff'))
+        legend.addItem(self.rssi_line, self.tr('RSSI'))
 
         self.btn_threshold = QPushButton()
         self.btn_threshold.setIcon(QIcon(r'assets/icons/threshold.png'))
@@ -165,6 +166,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
 
     def update_thresholds(self, new_values: list):
         self.thresholds = new_values
+        self.is_exceed_threshold()
 
     def reset_threshold(self, new_threshold: int):
         for i in range(len(self.thresholds)):
@@ -238,6 +240,18 @@ class FPVScopeWidget(QDockWidget, QWidget):
         percent_value = 100 * (value - default_min_value) / (default_max_value - default_min_value)
         return percent_value
 
+    def is_exceed_threshold(self):
+        exceeded_indexes = []
+        for i in range(len(self.x_indices)):
+            if self.fpv_coeff_values[i] > self.thresholds[i]:
+                exceeded_indexes.append(i)
+
+        view_box = self.plot.getViewBox()
+        if exceeded_indexes:
+            view_box.setBackgroundColor(QtGui.QColor(255, 110, 110, 60))
+        else:
+            view_box.setBackgroundColor(QtGui.QColor(0, 0, 0))
+
     def update_graph(self, packet: dict):
         """ FPV Scope Data packet: {'1G2': [{'freq': 1080, 'rssi': 808, 'fpv_coeff': 8},
                                            {'freq': 1120, 'rssi': 749, 'fpv_coeff': 13}, ... """
@@ -265,6 +279,8 @@ class FPVScopeWidget(QDockWidget, QWidget):
         self.fpv_coeff_line.setData(self.x_indices, self.fpv_coeff_values)
         self.fpv_coeff_scatter.setData(self.x_indices, self.fpv_coeff_values)
         self.rssi_line.setData(self.x_indices, self.fpv_rssi_values)
+
+        self.is_exceed_threshold()
 
 
 class DraggableScatter(pg.ScatterPlotItem):
@@ -308,8 +324,9 @@ class DraggableScatter(pg.ScatterPlotItem):
         self.signal_new_thresholds.emit(self.y_data.tolist())
 
     def update_threshold(self, new_threshold: list):
-        self.setData(x=self.x_data, y=new_threshold)
-        self.line_item.setData(x=self.x_data, y=new_threshold)
+        self.y_data = np.array(new_threshold)
+        self.setData(x=self.x_data, y=self.y_data)
+        self.line_item.setData(x=self.x_data, y=self.y_data)
 
 
 class ThresholdWindow(QDialog):
@@ -317,20 +334,20 @@ class ThresholdWindow(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Reset threshold')
+        self.setWindowTitle(self.tr('Reset threshold'))
         self.create_controls()
         self.add_widgets_to_layout()
         self.setFixedWidth(220)
 
     def create_controls(self):
-        self.l_threshold = QLabel('New threshold')
+        self.l_threshold = QLabel(self.tr('New threshold'))
         self.spb_threshold = QSpinBox()
         self.spb_threshold.setFixedSize(QSize(100, 40))
         self.spb_threshold.setRange(1, 100)
         self.spb_threshold.setValue(25)
         self.spb_threshold.setSingleStep(1)
 
-        self.btn_set_up = QPushButton('Set up')
+        self.btn_set_up = QPushButton(self.tr('Set up'))
         self.btn_set_up.clicked.connect(self.btn_set_up_clicked)
 
     def add_widgets_to_layout(self):

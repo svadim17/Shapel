@@ -469,6 +469,9 @@ class EmulationTread(QtCore.QThread):
     signal_threshold = QtCore.pyqtSignal(int)
     signal_calibration = QtCore.pyqtSignal(list)
     signal_drons_gains = QtCore.pyqtSignal(list)
+    signal_success_change_ip = QtCore.pyqtSignal(bool)
+    signal_fpvScope_packet = QtCore.pyqtSignal(dict)
+    signal_fpvData_packet = QtCore.pyqtSignal(list)
 
     def __init__(self, number_of_drons, thread_timeout, logger_):
         self.logger = logger_
@@ -588,6 +591,9 @@ class PlayerTread(QtCore.QThread):
     signal_threshold = QtCore.pyqtSignal(int)
     signal_calibration = QtCore.pyqtSignal(list)
     signal_drons_gains = QtCore.pyqtSignal(list)
+    signal_fpvScope_packet = QtCore.pyqtSignal(dict)
+    signal_fpvData_packet = QtCore.pyqtSignal(list)
+    signal_success_change_ip = QtCore.pyqtSignal(bool)
 
     def __init__(self, number_of_drons, record, thread_timeout, logger_):
         self.logger = logger_

@@ -3,9 +3,9 @@ import numpy as np
 from submodules import basic
 from PyQt5 import Qt, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsEllipseItem
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QColor, QPen
+from PyQt5.QtWidgets import QGraphicsEllipseItem, QVBoxLayout, QGraphicsPathItem
+from PyQt5.QtWidgets import QDockWidget, QWidget
+from PyQt5.QtGui import QColor, QPen, QPainterPath
 from pyqtgraph import TextItem
 from math import isnan
 
@@ -15,7 +15,7 @@ class PelengWidget(QDockWidget, QWidget):
     def __init__(self, config, drons_config, logger_):
         super().__init__()
         self.logger = logger_
-        self.setWindowTitle('Peleng')
+        self.setWindowTitle(self.tr('Peleng'))
         self.setWidget(QWidget(self))
         self.widget().setLayout(QVBoxLayout())
         self.widget().layout().setContentsMargins(0, 0, 0, 0)
@@ -57,6 +57,8 @@ class PelengWidget(QDockWidget, QWidget):
         self.values_nearest_max_with_gain = [0] * self.number_of_drons
 
         self.view_lvls_flag = True
+
+        self.sector_highlights = [None] * self.sectors          # Инициализация массива подсветок
 
         self.radar_labeling()
         self.draw_graph()
@@ -212,6 +214,8 @@ class PelengWidget(QDockWidget, QWidget):
         for i in range(self.number_of_drons):
             self.plot.removeItem(self.peleng[i])
 
+        sector_power_map = {}  # Словарь: сектор -> макс мощность в нем
+
         for i in range(len(pelengs)):
             if isnan(pelengs[i].angle):     # check if peleng is NaN
                 self.logger.warning(f"Skipping peleng {i} due to NaN angle")
@@ -234,6 +238,22 @@ class PelengWidget(QDockWidget, QWidget):
             self.peleng[i].setBrush(QColor(pelengs[i].color[0], pelengs[i].color[1], pelengs[i].color[2]))
             self.plot.addItem(self.peleng[i])
 
+            angle_step = (360 / self.sectors)
+            sector_angle = (360 - pelengs[i].angle + 90 + 30) % 360
+            sector_ind = int(sector_angle // angle_step)
+
+            # Обновляем мощность в секторе
+            if sector_ind not in sector_power_map or power > sector_power_map[sector_ind]:
+                sector_power_map[sector_ind] = power
+
+            # Подсветка сектора, где мощность выше порога
+            for sector in range(self.sectors):
+                power = sector_power_map.get(sector, 0)
+                if power > self.threshold:
+                    self.highlight_on_sector(sector)
+                else:
+                    self.highlight_off_sector(sector)
+
     def change_threshold(self, value: int):
         self.plot.removeItem(self.thr_circle)  # Remove threshold circle
         self.threshold = value
@@ -249,8 +269,45 @@ class PelengWidget(QDockWidget, QWidget):
     def change_view_levels_flag(self, status: bool):
         self.view_lvls_flag = status
 
-    def change_background_color(self, status: bool, numb_of_exceed_signals: list, new_btn_colors: list):
-        if status:
-            self.graphWindow.setBackground(QtGui.QColor(255, 110, 110, 100))
-        else:
-            self.graphWindow.setBackground(QtGui.QColor(0, 0, 0))
+    def highlight_on_sector(self, sector_index: int):
+        if self.sector_highlights[sector_index] is not None:
+            return  # Уже подсвечен
+
+        color = QColor(0, 255, 0)
+        opacity = 0.2
+
+        angle_step = (360 / self.sectors)
+        angle_start = sector_index * angle_step
+        angle_end = angle_start + angle_step
+
+        # Построение пути сектора
+        path = QPainterPath()
+        path.moveTo(0, 0)
+        for angle_deg in np.linspace(angle_start, angle_end, 100):
+            angle_rad = np.radians(angle_deg)
+            x = self.radar_radius * np.cos(angle_rad)
+            y = self.radar_radius * np.sin(angle_rad)
+            path.lineTo(x, y)
+        path.closeSubpath()
+
+        sector_item = QGraphicsPathItem(path)
+        brush = QtGui.QBrush(color)
+        brush.setStyle(Qt.SolidPattern)
+        brush.setColor(color)
+        sector_item.setBrush(brush)
+        sector_item.setOpacity(opacity)
+        sector_item.setZValue(5)
+
+        pen = QtGui.QPen(Qt.NoPen)
+        sector_item.setPen(pen)
+
+        self.plot.addItem(sector_item)
+        self.sector_highlights[sector_index] = sector_item
+
+    def highlight_off_sector(self, sector_index: int):
+        if not hasattr(self, 'sector_highlights'):
+            return
+
+        if self.sector_highlights[sector_index] is not None:
+            self.plot.removeItem(self.sector_highlights[sector_index])
+            self.sector_highlights[sector_index] = None

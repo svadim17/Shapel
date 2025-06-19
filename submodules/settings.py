@@ -26,18 +26,18 @@ class SettingsWidget(QWidget):
         self.lang_conf = {}
         self.configuration_conf = {}
         self.setLayout(QVBoxLayout())
-        self.setWindowTitle('Settings')
+        self.setWindowTitle(self.tr('Settings'))
         self.drons = []
 
         self.tabWidget = QTabWidget()
         self.layout().addWidget(self.tabWidget)
 
         self.connection = ConnectionSettingsWidget(logger_=self.logger)
-        self.tabWidget.addTab(self.connection, 'Connection')
+        self.tabWidget.addTab(self.connection, self.tr('Connection'))
         self.debug = DebugWidget(logger_=self.logger)
-        self.tabWidget.addTab(self.debug, 'Debug')
+        self.tabWidget.addTab(self.debug, self.tr('Debug'))
 
-        self.btn_dump_conf = QPushButton('Save config')
+        self.btn_dump_conf = QPushButton(self.tr('Save config'))
         self.layout().addWidget(self.btn_dump_conf)
         self.btn_dump_conf.clicked.connect(self.dump_conf)
 
@@ -48,7 +48,7 @@ class SettingsWidget(QWidget):
         self.set_conf()
 
         self.database = DataBaseWidget(logger_=self.logger)
-        self.tabWidget.addTab(self.database, 'Database')
+        self.tabWidget.addTab(self.database, ('Database'))
 
         if self.conf['widgets']['settingsConfiguration']:
             self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
@@ -117,39 +117,39 @@ class ConnectionSettingsWidget(QWidget):
         self.add_widgets_to_layout()
 
     def create_widgets(self):
-        self.box_timeout = QGroupBox('Timeout')
+        self.box_timeout = QGroupBox(self.tr('Timeout'))
         self.spb_timeout = QSpinBox()
         self.spb_timeout.setSingleStep(1)
         self.spb_timeout.setMaximum(5000)
 
-        self.box_tcp = QGroupBox('TCP (remote control)')
-        self.l_ip_address = QLabel('IP address')
+        self.box_tcp = QGroupBox(self.tr('TCP (remote control)'))
+        self.l_ip_address = QLabel(self.tr('IP address'))
         self.le_ip_address = QLineEdit()
-        self.l_port_numb = QLabel('Port number')
+        self.l_port_numb = QLabel(self.tr('Port number'))
         self.le_port_numb = QLineEdit()
         self.le_port_numb.setText('55555')
-        self.btn_check_tcp_connection = QPushButton('Check TCP')
+        self.btn_check_tcp_connection = QPushButton(self.tr('Check TCP'))
         self.btn_check_tcp_connection.clicked.connect(self.btn_check_tcp_clicked)
         self.status_icon = QLabel()
         self.status_icon.setPixmap(QPixmap('assets/icons/unknown.png'))
 
-        self.box_detect_config = QGroupBox('Detect config')
-        self.btn_send_detect_settings = QPushButton('Send config')
-        self.btn_receive_detect_settings = QPushButton("Receive config")
+        self.box_detect_config = QGroupBox(self.tr('Detect config'))
+        self.btn_send_detect_settings = QPushButton(self.tr('Send config'))
+        self.btn_receive_detect_settings = QPushButton(self.tr('Receive config'))
 
-        self.box_camera = QGroupBox('Camera device')
+        self.box_camera = QGroupBox(self.tr('Camera device'))
         self.cb_camera = QComboBox()
         self.cb_camera.setFixedWidth(250)
         available_cameras = QCameraInfo.availableCameras()
         for cam in available_cameras:
             self.cb_camera.addItem(str(cam.description()), cam)
 
-        self.box_change_ip = QGroupBox('Change IP address')
+        self.box_change_ip = QGroupBox(self.tr('Change IP address'))
         self.le_new_ip = QLineEdit()
-        self.le_new_ip.setPlaceholderText('Enter new IP address')
+        self.le_new_ip.setPlaceholderText(self.tr('Enter new IP address'))
         self.le_new_port = QLineEdit()
-        self.le_new_port.setPlaceholderText('Enter new port')
-        self.btn_change_ip = QPushButton('Change')
+        self.le_new_port.setPlaceholderText(self.tr('Enter new port'))
+        self.btn_change_ip = QPushButton(self.tr('Change'))
 
     def add_widgets_to_layout(self):
         spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -279,16 +279,16 @@ class DebugWidget(QWidget):
         self.add_widgets_to_layout()
 
     def create_widgets(self):
-        self.box_connection = QGroupBox('Connection')
-        self.l_connection_type = QLabel('Connection type')
+        self.box_connection = QGroupBox(self.tr('Connection'))
+        self.l_connection_type = QLabel(self.tr('Connection type'))
         self.cb_connection_type = QComboBox()
         self.cb_connection_type.addItems(['TCP', 'Emulation', 'Player'])
-        self.l_record = QLabel('Record for \'player\'')
+        self.l_record = QLabel(self.tr('Record for \'player\''))
         self.cb_record = QComboBox()
         for record_name in self.get_all_files(dir='records'):
             self.cb_record.addItem(record_name)
 
-        self.box_sound = QGroupBox('Sound')
+        self.box_sound = QGroupBox(self.tr('Sound'))
         self.cb_sound = QComboBox()
         self.sound_path = r'assets/sounds/'
         for sound_name in self.get_all_files(dir=self.sound_path):
@@ -298,14 +298,14 @@ class DebugWidget(QWidget):
         self.btn_play_sound.setFixedSize(26, 26)
         self.btn_play_sound.clicked.connect(self.event_check_sound)
 
-        self.box_other = QGroupBox('Other')
-        self.chb_database_log = QCheckBox('Enable DataBase Logging')
+        self.box_other = QGroupBox(self.tr('Other'))
+        self.chb_database_log = QCheckBox(self.tr('Enable DataBase Logging'))
         self.chb_database_log.setTristate(False)
-        self.chb_peleng_level = QCheckBox('Consider signal levels in Peleng')
+        self.chb_peleng_level = QCheckBox(self.tr('Consider signal levels in Peleng'))
         self.chb_peleng_level.setTristate(False)
-        self.chb_average_peleng = QCheckBox('Average pelengs')
+        self.chb_average_peleng = QCheckBox(self.tr('Average pelengs'))
         self.chb_average_peleng.setTristate(False)
-        self.chb_average_spectrum = QCheckBox('Average spectrum')
+        self.chb_average_spectrum = QCheckBox(self.tr('Average spectrum'))
         self.chb_average_spectrum.setTristate(False)
 
     def add_widgets_to_layout(self):
@@ -422,20 +422,20 @@ class ConfigurationWidget(QWidget):
         self.add_to_layout()
 
     def create_buttons(self):
-        self.main_label = QLabel('Frequency settings')
+        self.main_label = QLabel(self.tr('Frequency settings'))
 
-        self.btn_read_file = QPushButton('Read from file')
+        self.btn_read_file = QPushButton(self.tr('Read from file'))
         self.btn_read_file.setFixedSize(155, 30)
         self.btn_read_file.clicked.connect(self.set_data_to_table)
 
-        self.btn_read_controller = QPushButton('Read from controller')
+        self.btn_read_controller = QPushButton(self.tr('Read from controller'))
         self.btn_read_controller.setFixedSize(210, 30)
 
-        self.btn_write_file = QPushButton('Write to file')
+        self.btn_write_file = QPushButton(self.tr('Write to file'))
         self.btn_write_file.setFixedSize(140, 30)
         self.btn_write_file.clicked.connect(self.write_data_to_file)
 
-        self.btn_write_controller = QPushButton('Write to controller')
+        self.btn_write_controller = QPushButton(self.tr('Write to controller'))
         self.btn_write_controller.setFixedSize(190, 30)
         self.btn_write_controller.clicked.connect(self.write_data_to_controller)
 
@@ -670,7 +670,7 @@ class DataBaseWidget(QWidget):
         self.calendar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Фиксируем размер
 
         # Time
-        self.l_time = QLabel('Time, hour')
+        self.l_time = QLabel(self.tr('Time, hour'))
         self.cb_time = QComboBox()
         self.cb_time.addItem('0-24', '24/7')
         for counter in range(24):
@@ -679,14 +679,14 @@ class DataBaseWidget(QWidget):
         self.cb_time.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         # Search button
-        self.btn_search = QPushButton('Search')
+        self.btn_search = QPushButton(self.tr('Search'))
         self.btn_search.setFixedSize(100, 30)  # Уменьшаем ширину кнопки
 
         # Table
         self.table = QTableWidget()
         self.table.setRowCount(5)
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(['Date', 'Time', 'Drone', 'Angle'])
+        self.table.setHorizontalHeaderLabels([self.tr('Date'), self.tr('Time'), self.tr('Drone'), self.tr('Angle')])
         for i in range(self.table.columnCount()):
             self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -737,10 +737,10 @@ class DataBaseWidget(QWidget):
             for i in range(self.table.columnCount()):
                 self.table.setItem(0, i, QTableWidgetItem(''))
         else:
-            self.table.setItem(0, 0, QTableWidgetItem('No'))
-            self.table.setItem(0, 1, QTableWidgetItem('warnings'))
-            self.table.setItem(0, 2, QTableWidgetItem('at this'))
-            self.table.setItem(0, 3, QTableWidgetItem('time!'))
+            self.table.setItem(0, 0, QTableWidgetItem(self.tr('No')))
+            self.table.setItem(0, 1, QTableWidgetItem(self.tr('warnings')))
+            self.table.setItem(0, 2, QTableWidgetItem(self.tr('at this')))
+            self.table.setItem(0, 3, QTableWidgetItem(self.tr('time!')))
             for i in range(self.table.columnCount()):
                 self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
 
