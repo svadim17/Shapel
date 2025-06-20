@@ -22,27 +22,27 @@
 <context>
     <name>ConfigurationWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="425"/>
+        <location filename="../submodules/settings.py" line="420"/>
         <source>Frequency settings</source>
         <translation>Frequency settings</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="427"/>
+        <location filename="../submodules/settings.py" line="422"/>
         <source>Read from file</source>
         <translation>Read from file</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="431"/>
+        <location filename="../submodules/settings.py" line="426"/>
         <source>Read from controller</source>
         <translation>Read from controller</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="434"/>
+        <location filename="../submodules/settings.py" line="429"/>
         <source>Write to file</source>
         <translation>Write to file</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="438"/>
+        <location filename="../submodules/settings.py" line="433"/>
         <source>Write to controller</source>
         <translation>Write to controller</translation>
     </message>
@@ -118,52 +118,52 @@
 <context>
     <name>DataBaseWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="673"/>
+        <location filename="../submodules/settings.py" line="668"/>
         <source>Time, hour</source>
         <translation>Time, hour</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="682"/>
+        <location filename="../submodules/settings.py" line="677"/>
         <source>Search</source>
         <translation>Search</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="689"/>
+        <location filename="../submodules/settings.py" line="684"/>
         <source>Date</source>
         <translation>Date</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="689"/>
+        <location filename="../submodules/settings.py" line="684"/>
         <source>Time</source>
         <translation>Time</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="689"/>
+        <location filename="../submodules/settings.py" line="684"/>
         <source>Drone</source>
         <translation>Drone</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="689"/>
+        <location filename="../submodules/settings.py" line="684"/>
         <source>Angle</source>
         <translation>Angle</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="740"/>
+        <location filename="../submodules/settings.py" line="735"/>
         <source>No</source>
         <translation>No</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="741"/>
+        <location filename="../submodules/settings.py" line="736"/>
         <source>warnings</source>
         <translation>warnings</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="742"/>
+        <location filename="../submodules/settings.py" line="737"/>
         <source>at this</source>
         <translation>at this</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="743"/>
+        <location filename="../submodules/settings.py" line="738"/>
         <source>time!</source>
         <translation>time!</translation>
     </message>
@@ -197,21 +197,16 @@
     </message>
     <message>
         <location filename="../submodules/settings.py" line="302"/>
-        <source>Enable DataBase Logging</source>
-        <translation>Enable DataBase Logging</translation>
-    </message>
-    <message>
-        <location filename="../submodules/settings.py" line="304"/>
         <source>Consider signal levels in Peleng</source>
         <translation>Consider signal levels in Peleng</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="306"/>
+        <location filename="../submodules/settings.py" line="304"/>
         <source>Average pelengs</source>
         <translation>Average pelengs</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="308"/>
+        <location filename="../submodules/settings.py" line="306"/>
         <source>Average spectrum</source>
         <translation>Average spectrum</translation>
     </message>
@@ -319,27 +314,27 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main.py" line="89"/>
+        <location filename="../main.py" line="88"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../main.py" line="94"/>
+        <location filename="../main.py" line="93"/>
         <source>Settings</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../main.py" line="103"/>
+        <location filename="../main.py" line="102"/>
         <source>Sound</source>
         <translation>Sound</translation>
     </message>
     <message>
-        <location filename="../main.py" line="109"/>
+        <location filename="../main.py" line="108"/>
         <source>Toolbar</source>
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location filename="../main.py" line="184"/>
+        <location filename="../main.py" line="183"/>
         <source>Configuration</source>
         <translation>Configuration</translation>
     </message>
@@ -479,6 +474,11 @@
         <location filename="../submodules/settings.py" line="40"/>
         <source>Save config</source>
         <translation>Save config</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="51"/>
+        <source>Database</source>
+        <translation>Database</translation>
     </message>
 </context>
 <context>

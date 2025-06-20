@@ -48,7 +48,7 @@ class SettingsWidget(QWidget):
         self.set_conf()
 
         self.database = DataBaseWidget(logger_=self.logger)
-        self.tabWidget.addTab(self.database, ('Database'))
+        self.tabWidget.addTab(self.database, self.tr('Database'))
 
         if self.conf['widgets']['settingsConfiguration']:
             self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
@@ -299,8 +299,6 @@ class DebugWidget(QWidget):
         self.btn_play_sound.clicked.connect(self.event_check_sound)
 
         self.box_other = QGroupBox(self.tr('Other'))
-        self.chb_database_log = QCheckBox(self.tr('Enable DataBase Logging'))
-        self.chb_database_log.setTristate(False)
         self.chb_peleng_level = QCheckBox(self.tr('Consider signal levels in Peleng'))
         self.chb_peleng_level.setTristate(False)
         self.chb_average_peleng = QCheckBox(self.tr('Average pelengs'))
@@ -322,7 +320,6 @@ class DebugWidget(QWidget):
         self.box_connection.setLayout(box_connection_layout)
 
         box_other_layout = QVBoxLayout()
-        box_other_layout.addWidget(self.chb_database_log)
         box_other_layout.addWidget(self.chb_peleng_level)
         box_other_layout.addWidget(self.chb_average_peleng)
         box_other_layout.addWidget(self.chb_average_spectrum)
@@ -352,7 +349,6 @@ class DebugWidget(QWidget):
     def collect_conf(self):
         conf = {'debug': {'connection_type': self.cb_connection_type.currentText(),
                           'player_record': self.cb_record.currentText(),
-                          'database_logging': bool(self.chb_database_log.checkState()),
                           'warning_sound': self.cb_sound.currentText(),
                           'levels_in_peleng': bool(self.chb_peleng_level.checkState()),
                           'average_levels_for_peleng': bool(self.chb_average_peleng.checkState()),
@@ -363,7 +359,6 @@ class DebugWidget(QWidget):
         try:
             self.cb_connection_type.setCurrentText(conf['connection_type'])
             self.cb_record.setCurrentText(conf['player_record'])
-            self.chb_database_log.setChecked(conf['database_logging'])
             self.cb_sound.setCurrentText(conf['warning_sound'])
             self.chb_peleng_level.setChecked(conf['levels_in_peleng'])
             self.chb_average_peleng.setChecked(conf['average_levels_for_peleng'])

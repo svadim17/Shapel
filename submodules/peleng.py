@@ -273,8 +273,8 @@ class PelengWidget(QDockWidget, QWidget):
         if self.sector_highlights[sector_index] is not None:
             return  # Уже подсвечен
 
-        color = QColor(0, 255, 0)
-        opacity = 0.2
+        color = QColor(255, 0, 0)
+        opacity = 0.3
 
         angle_step = (360 / self.sectors)
         angle_start = sector_index * angle_step

@@ -22,6 +22,7 @@ from submodules.fpv_scope import FPVScopeWidget
 from submodules.fpv_scope_settings import FpvScopeSettings
 from submodules.record_calibration import RecordCalibration
 from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMode, SerialSpinTread)
+from submodules.database_logging import DataBaseLog
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -82,8 +83,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fpvScopeWidget_status = bool(self.settingsWidget.conf['widgets']['fpvScopeWidget'])
         self.recordCalibrationWidget_status = bool(self.settingsWidget.conf['widgets']['recordCalibrationWidget'])
         self.settingsConfiguration_status = bool(self.settingsWidget.conf['widgets']['settingsConfiguration'])
-
-        self.DataBaseLog_flag = True
 
     def create_actions(self):
         self.act_start = QAction(self.tr('Start'))
@@ -184,22 +183,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settingsWidget.tabWidget.addTab(self.settingsWidget.configuration, self.tr('Configuration'))
 
     def init_dataBase_logging(self):
-        if not self.DataBaseLog_flag:
-            from submodules.database_logging import DataBaseLog
-            try:
-                self.DataBaseLog
-            except:
-                self.DataBaseLog = DataBaseLog()
-            if self.settingsWidget.debug.chb_database_log.checkState():
-                self.processor.sig_warning_database.connect(self.DataBaseLog.append_table)
-            self.DataBaseLog.signal_request_dataframe.connect(self.settingsWidget.database.receive_requested_data)
-            self.DataBaseLog_flag = True
-        else:
-            try:
-                self.processor.sig_warning_database.disconnect(self.DataBaseLog.append_table)
-            except:
-                pass
-            self.DataBaseLog_flag = False
+        self.DataBaseLog = DataBaseLog()
+        self.processor.sig_warning_database.connect(self.DataBaseLog.append_table)
+        self.DataBaseLog.signal_request_dataframe.connect(self.settingsWidget.database.receive_requested_data)
 
     def add_widgets_to_window(self):
         # Peleng и Levels (верхний правый)
@@ -334,7 +320,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settingsWidget.connection.btn_receive_detect_settings.clicked.connect(self.connection.receive_detect_settings)
         self.settingsWidget.connection.cb_camera.currentTextChanged.connect(lambda: self.fpvVideoWidget.change_camera(
             self.settingsWidget.connection.cb_camera.currentData()))
-        self.settingsWidget.debug.chb_database_log.stateChanged.connect(self.database_log_changed)
 
         self.settingsWidget.database.btn_search.clicked.connect(lambda: self.DataBaseLog.get_data_from_database(
                                         cur_date=self.settingsWidget.database.calendar.selectedDate().toString("yyyy-MM-dd"),
@@ -367,14 +352,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.act_sound.setIcon(QIcon(rf'assets/icons/sound_off.png'))
         self.settingsWidget.debug.sound_flag_changed(status)
-
-    def database_log_changed(self, status):
-        if status:
-            self.init_dataBase_logging()
-            # self.processor.sig_warning_database.connect(self.DataBaseLog.append_table)
-        else:
-            self.processor.sig_warning_database.disconnect(self.DataBaseLog.append_table)
-
 
 def load_translator(app, language):
     translator = QTranslator()

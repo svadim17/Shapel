@@ -36,7 +36,6 @@ log:
 debug:
   connection_type: Player
   player_record: mavic24_2kruga.txt
-  database_logging: true
   warning_sound: alert.mp3
   levels_in_peleng: true
   average_levels_for_peleng: false
