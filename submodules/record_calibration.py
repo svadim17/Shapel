@@ -327,7 +327,7 @@ class RecordCalibration(QDockWidget, QWidget):
                     self.logger.success(f'Finished to save all degrees!')
                     return
                 self.spb_degree.setValue(new_degree)
-                self.save_status.setText(self.tr('Moving to degree: '), new_degree)
+                self.save_status.setText(self.tr(f'Moving to degree: {new_degree}'))
                 self.spinner.signal_set_angle.emit(str(new_degree))
 
     def average_accumulation(self, data):
