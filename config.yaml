@@ -1,4 +1,4 @@
-language: 'ru'
+language: ru
 connection:
   timeout: 200
   ip_address: 192.168.150.196
@@ -27,16 +27,13 @@ peleng_coefficients:
   58:
     a: 30
     b: 0.7
-view:
-  theme: dark_yellow.xml
-  language: Russian
-  full_screen: false
 log:
   viewed_messages: 30
 debug:
   connection_type: Player
   player_record: mavic24_2kruga.txt
-  warning_sound: alert.mp3
+  warning_digital_sound: skala_digital.mp3
+  warning_analog_sound: skala_analog.mp3
   levels_in_peleng: true
   average_levels_for_peleng: false
   average_spectrum: false

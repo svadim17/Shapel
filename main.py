@@ -28,7 +28,7 @@ from submodules.database_logging import DataBaseLog
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.25.5')
+        self.setWindowTitle('Shapel v25.25.6')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -174,6 +174,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.settingsWidget.btn_dump_conf.clicked.connect(self.fpvScopeWidget.dump_configuration_conf)
         self.fpvScopeWidget.signal_freq_point_clicked.connect(self.fpvScopeSettingsWidget.change_mode_on_manual)
+        self.fpvScopeWidget.signal_exceed_threshold.connect(self.settingsWidget.debug.event_play_analog_sound)
         self.fpvScopeSettingsWidget.signal_manual_mode_state.connect(self.fpvScopeWidget.change_mode_on_manual)
 
     def init_recordCalibrationWidget(self):
@@ -292,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def link_events(self):
         self.processor.sig_auto_threshold.connect(self.change_threshold)
         self.processor.sig_progrBar_value.connect(self.calibrationWidget.change_value_progressBar)
-        self.processor.sig_warning.connect(self.settingsWidget.debug.event_play_sound)
+        self.processor.sig_warning.connect(self.settingsWidget.debug.event_play_digital_sound)
 
         self.slider_threshold.valueChanged.connect(self.processor.change_threshold)
         self.slider_threshold.valueChanged.connect(lambda threshold: self.settingsWidget.conf.update({'threshold': threshold}))

@@ -22,27 +22,27 @@
 <context>
     <name>ConfigurationWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="420"/>
+        <location filename="../submodules/settings.py" line="460"/>
         <source>Frequency settings</source>
         <translation>Frequency settings</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="422"/>
+        <location filename="../submodules/settings.py" line="462"/>
         <source>Read from file</source>
         <translation>Read from file</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="426"/>
+        <location filename="../submodules/settings.py" line="466"/>
         <source>Read from controller</source>
         <translation>Read from controller</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="429"/>
+        <location filename="../submodules/settings.py" line="469"/>
         <source>Write to file</source>
         <translation>Write to file</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="433"/>
+        <location filename="../submodules/settings.py" line="473"/>
         <source>Write to controller</source>
         <translation>Write to controller</translation>
     </message>
@@ -118,52 +118,52 @@
 <context>
     <name>DataBaseWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="668"/>
+        <location filename="../submodules/settings.py" line="708"/>
         <source>Time, hour</source>
         <translation>Time, hour</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="677"/>
+        <location filename="../submodules/settings.py" line="717"/>
         <source>Search</source>
         <translation>Search</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="684"/>
+        <location filename="../submodules/settings.py" line="724"/>
         <source>Date</source>
         <translation>Date</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="684"/>
+        <location filename="../submodules/settings.py" line="724"/>
         <source>Time</source>
         <translation>Time</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="684"/>
+        <location filename="../submodules/settings.py" line="724"/>
         <source>Drone</source>
         <translation>Drone</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="684"/>
+        <location filename="../submodules/settings.py" line="724"/>
         <source>Angle</source>
         <translation>Angle</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="735"/>
+        <location filename="../submodules/settings.py" line="775"/>
         <source>No</source>
         <translation>No</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="736"/>
+        <location filename="../submodules/settings.py" line="776"/>
         <source>warnings</source>
         <translation>warnings</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="737"/>
+        <location filename="../submodules/settings.py" line="777"/>
         <source>at this</source>
         <translation>at this</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="738"/>
+        <location filename="../submodules/settings.py" line="778"/>
         <source>time!</source>
         <translation>time!</translation>
     </message>
@@ -191,24 +191,34 @@
         <translation>Sound</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="301"/>
+        <location filename="../submodules/settings.py" line="313"/>
         <source>Other</source>
         <translation>Other</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="302"/>
+        <location filename="../submodules/settings.py" line="314"/>
         <source>Consider signal levels in Peleng</source>
         <translation>Consider signal levels in Peleng</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="304"/>
+        <location filename="../submodules/settings.py" line="316"/>
         <source>Average pelengs</source>
         <translation>Average pelengs</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="306"/>
+        <location filename="../submodules/settings.py" line="318"/>
         <source>Average spectrum</source>
         <translation>Average spectrum</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="294"/>
+        <source>Digital channel</source>
+        <translation>Digital channel</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="304"/>
+        <source>Analog channel</source>
+        <translation>Analog channel</translation>
     </message>
 </context>
 <context>
@@ -245,32 +255,32 @@
 <context>
     <name>FPVScopeWidget</name>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="21"/>
+        <location filename="../submodules/fpv_scope.py" line="22"/>
         <source>FPV Scope</source>
         <translation>FPV Scope</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="66"/>
+        <location filename="../submodules/fpv_scope.py" line="67"/>
         <source>Frequencies</source>
         <translation>Frequencies</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="69"/>
+        <location filename="../submodules/fpv_scope.py" line="70"/>
         <source>Frequency (MHz)</source>
         <translation>Frequency (MHz)</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="135"/>
+        <location filename="../submodules/fpv_scope.py" line="136"/>
         <source>Threshold</source>
         <translation>Threshold</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="136"/>
+        <location filename="../submodules/fpv_scope.py" line="137"/>
         <source>FPV Coeff</source>
         <translation>FPV Coeff</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="137"/>
+        <location filename="../submodules/fpv_scope.py" line="138"/>
         <source>RSSI</source>
         <translation>RSSI</translation>
     </message>
@@ -334,7 +344,7 @@
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location filename="../main.py" line="183"/>
+        <location filename="../main.py" line="184"/>
         <source>Configuration</source>
         <translation>Configuration</translation>
     </message>
@@ -439,8 +449,8 @@
     </message>
     <message>
         <location filename="../submodules/record_calibration.py" line="330"/>
-        <source>Moving to degree: </source>
-        <translation>Moving to degree: </translation>
+        <source>Moving to degree: {new_degree}</source>
+        <translation>Moving to degree: {new_degree}</translation>
     </message>
     <message>
         <location filename="../submodules/record_calibration.py" line="382"/>
@@ -484,17 +494,17 @@
 <context>
     <name>ThresholdWindow</name>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="337"/>
+        <location filename="../submodules/fpv_scope.py" line="341"/>
         <source>Reset threshold</source>
         <translation>Reset threshold</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="343"/>
+        <location filename="../submodules/fpv_scope.py" line="347"/>
         <source>New threshold</source>
         <translation>New threshold</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="350"/>
+        <location filename="../submodules/fpv_scope.py" line="354"/>
         <source>Set up</source>
         <translation>Set up</translation>
     </message>

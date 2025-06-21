@@ -14,6 +14,7 @@ import yaml
 
 class FPVScopeWidget(QDockWidget, QWidget):
     signal_freq_point_clicked = pyqtSignal(str)
+    signal_exceed_threshold = pyqtSignal(bool)
 
     def __init__(self, configuration_conf: dict, logger_):
         super().__init__()
@@ -173,6 +174,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
             self.thresholds[i] = new_threshold
         self.threshold_line.setData(x=self.x_indices, y=self.thresholds)
         self.threshold_scatter.update_threshold(new_threshold=self.thresholds)
+        self.is_exceed_threshold()
         self.logger.info(f'Default threshold was changed on {new_threshold}')
 
     def on_upward_point_clicked(self, scatter, points):
@@ -249,8 +251,10 @@ class FPVScopeWidget(QDockWidget, QWidget):
         view_box = self.plot.getViewBox()
         if exceeded_indexes:
             view_box.setBackgroundColor(QtGui.QColor(255, 110, 110, 60))
+            self.signal_exceed_threshold.emit(True)
         else:
             view_box.setBackgroundColor(QtGui.QColor(0, 0, 0))
+            self.signal_exceed_threshold.emit(False)
 
     def update_graph(self, packet: dict):
         """ FPV Scope Data packet: {'1G2': [{'freq': 1080, 'rssi': 808, 'fpv_coeff': 8},

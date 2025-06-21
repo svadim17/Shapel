@@ -289,14 +289,26 @@ class DebugWidget(QWidget):
             self.cb_record.addItem(record_name)
 
         self.box_sound = QGroupBox(self.tr('Sound'))
-        self.cb_sound = QComboBox()
-        self.sound_path = r'assets/sounds/'
-        for sound_name in self.get_all_files(dir=self.sound_path):
-            self.cb_sound.addItem(sound_name)
-        self.btn_play_sound = QPushButton()
-        self.btn_play_sound.setIcon(QIcon(r'assets/icons/play_sound.png'))
-        self.btn_play_sound.setFixedSize(26, 26)
-        self.btn_play_sound.clicked.connect(self.event_check_sound)
+
+        self.digital_sound_path = r'assets/sounds/digital_channel/'
+        self.l_digital_channel = QLabel(self.tr('Digital channel'))
+        self.cb_digital_sound = QComboBox()
+        for sound_name in self.get_all_files(dir=self.digital_sound_path):
+            self.cb_digital_sound.addItem(sound_name)
+        self.btn_play_digital_sound = QPushButton()
+        self.btn_play_digital_sound.setIcon(QIcon(r'assets/icons/play_sound.png'))
+        self.btn_play_digital_sound.setFixedSize(26, 26)
+        self.btn_play_digital_sound.clicked.connect(lambda: self.event_check_sound(type='digital'))
+
+        self.analog_sound_path = r'assets/sounds/analog_channel/'
+        self.l_analog_channel = QLabel(self.tr('Analog channel'))
+        self.cb_analog_sound = QComboBox()
+        for sound_name in self.get_all_files(dir=self.analog_sound_path):
+            self.cb_analog_sound.addItem(sound_name)
+        self.btn_play_analog_sound = QPushButton()
+        self.btn_play_analog_sound.setIcon(QIcon(r'assets/icons/play_sound.png'))
+        self.btn_play_analog_sound.setFixedSize(26, 26)
+        self.btn_play_analog_sound.clicked.connect(lambda: self.event_check_sound(type='analog'))
 
         self.box_other = QGroupBox(self.tr('Other'))
         self.chb_peleng_level = QCheckBox(self.tr('Consider signal levels in Peleng'))
@@ -325,10 +337,26 @@ class DebugWidget(QWidget):
         box_other_layout.addWidget(self.chb_average_spectrum)
         self.box_other.setLayout(box_other_layout)
 
-        box_sound_layout = QHBoxLayout()
+        box_sound_layout = QVBoxLayout()
         box_sound_layout.setAlignment(Qt.AlignTop)
-        box_sound_layout.addWidget(self.cb_sound)
-        box_sound_layout.addWidget(self.btn_play_sound)
+
+        box_digital_sound_layout = QHBoxLayout()
+        cb_digital_sound_layout = QVBoxLayout()
+        cb_digital_sound_layout.addWidget(self.l_digital_channel)
+        cb_digital_sound_layout.addWidget(self.cb_digital_sound)
+        box_digital_sound_layout.addLayout(cb_digital_sound_layout)
+        box_digital_sound_layout.addWidget(self.btn_play_digital_sound, alignment=Qt.AlignBottom)
+
+        box_analog_sound_layout = QHBoxLayout()
+        cb_analog_sound_layout = QVBoxLayout()
+        cb_analog_sound_layout.addWidget(self.l_analog_channel)
+        cb_analog_sound_layout.addWidget(self.cb_analog_sound)
+        box_analog_sound_layout.addLayout(cb_analog_sound_layout)
+        box_analog_sound_layout.addWidget(self.btn_play_analog_sound, alignment=Qt.AlignBottom)
+
+        box_sound_layout.addLayout(box_digital_sound_layout)
+        box_sound_layout.addSpacing(20)
+        box_sound_layout.addLayout(box_analog_sound_layout)
         self.box_sound.setLayout(box_sound_layout)
 
         line_layout = QHBoxLayout()
@@ -349,7 +377,8 @@ class DebugWidget(QWidget):
     def collect_conf(self):
         conf = {'debug': {'connection_type': self.cb_connection_type.currentText(),
                           'player_record': self.cb_record.currentText(),
-                          'warning_sound': self.cb_sound.currentText(),
+                          'warning_digital_sound': self.cb_digital_sound.currentText(),
+                          'warning_analog_sound': self.cb_analog_sound.currentText(),
                           'levels_in_peleng': bool(self.chb_peleng_level.checkState()),
                           'average_levels_for_peleng': bool(self.chb_average_peleng.checkState()),
                           'average_spectrum': bool(self.chb_average_spectrum.checkState())}}
@@ -359,24 +388,35 @@ class DebugWidget(QWidget):
         try:
             self.cb_connection_type.setCurrentText(conf['connection_type'])
             self.cb_record.setCurrentText(conf['player_record'])
-            self.cb_sound.setCurrentText(conf['warning_sound'])
+            self.cb_digital_sound.setCurrentText(conf['warning_digital_sound'])
+            self.cb_analog_sound.setCurrentText(conf['warning_analog_sound'])
             self.chb_peleng_level.setChecked(conf['levels_in_peleng'])
             self.chb_average_peleng.setChecked(conf['average_levels_for_peleng'])
-            # self.chb_leds_activation.setChecked(conf['led_activation'])
             self.chb_average_spectrum.setChecked(conf['average_spectrum'])
         except:
             self.logger.error('Can\'t load debug conf')
 
-    def event_play_sound(self, status: bool):
-        pygame.mixer.music.load(self.sound_path + self.cb_sound.currentText())
+    def event_play_digital_sound(self, status: bool):
+        pygame.mixer.music.load(self.digital_sound_path + self.cb_digital_sound.currentText())
         if status and self.sound_flag:
             pygame.mixer.music.play()
         else:
             pygame.mixer.stop()
 
-    def event_check_sound(self, status: bool):
-        pygame.mixer.music.load(self.sound_path + self.cb_sound.currentText())
-        pygame.mixer.music.play()
+    def event_play_analog_sound(self, status: bool):
+        pygame.mixer.music.load(self.analog_sound_path + self.cb_analog_sound.currentText())
+        if status and self.sound_flag:
+            pygame.mixer.music.play()
+        else:
+            pygame.mixer.stop()
+
+    def event_check_sound(self, type: str):
+        if type == 'digital':
+            pygame.mixer.music.load(self.digital_sound_path + self.cb_digital_sound.currentText())
+            pygame.mixer.music.play()
+        elif type == 'analog':
+            pygame.mixer.music.load(self.analog_sound_path + self.cb_analog_sound.currentText())
+            pygame.mixer.music.play()
 
     def sound_flag_changed(self, status):
         self.sound_flag = status
