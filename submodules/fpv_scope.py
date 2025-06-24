@@ -2,7 +2,7 @@ from PyQt5 import Qt, QtGui
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (QDockWidget, QWidget, QVBoxLayout, QHBoxLayout,
                              QApplication, QPushButton, QGridLayout, QLabel, QScrollArea, QFrame, QSizePolicy, QDialog,
-                             QSpinBox)
+                             QSpinBox, QGroupBox)
 from PyQt5.QtMultimedia import QCameraInfo, QCamera
 from PyQt5.QtMultimediaWidgets import QCameraViewfinder
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
@@ -27,7 +27,6 @@ class FPVScopeWidget(QDockWidget, QWidget):
         self.selected_up_index = None
 
         self.freqs, self.freqs_len, self.thresholds, self.x_indices = self.get_data_from_dict()
-        print(self.freqs)
         self.fpv_coeff_values = np.random.uniform(0, 10, self.freqs_len)
         self.fpv_rssi_values = np.random.uniform(0, 5, self.freqs_len)
 
@@ -338,36 +337,58 @@ class ThresholdWindow(QDialog):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(self.tr('Reset threshold'))
+        self.setWindowTitle(self.tr('Threshold settings'))
         self.create_controls()
         self.add_widgets_to_layout()
-        self.setFixedWidth(220)
+        # self.setFixedWidth(220)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
     def create_controls(self):
-        self.l_threshold = QLabel(self.tr('New threshold'))
-        self.spb_threshold = QSpinBox()
-        self.spb_threshold.setFixedSize(QSize(100, 40))
-        self.spb_threshold.setRange(1, 100)
-        self.spb_threshold.setValue(25)
-        self.spb_threshold.setSingleStep(1)
-
+        self.box_default_thr = QGroupBox(self.tr('Default threshold'))
+        self.spb_default_thr = QSpinBox()
+        self.spb_default_thr.setFixedSize(QSize(100, 40))
+        self.spb_default_thr.setRange(1, 100)
+        self.spb_default_thr.setValue(25)
+        self.spb_default_thr.setSingleStep(1)
         self.btn_set_up = QPushButton(self.tr('Set up'))
         self.btn_set_up.clicked.connect(self.btn_set_up_clicked)
 
+        self.box_auto_thr = QGroupBox(self.tr('Auto threshold'))
+        self.l_numb_of_accum = QLabel(self.tr('Number of accumulation'))
+        self.spb_numb_of_accum = QSpinBox()
+        self.spb_numb_of_accum.setFixedSize(QSize(100, 40))
+        self.spb_numb_of_accum.setRange(1, 5)
+        self.spb_numb_of_accum.setValue(1)
+        self.spb_numb_of_accum.setSingleStep(1)
+        self.btn_auto_set_up = QPushButton(self.tr('Set up'))
+
     def add_widgets_to_layout(self):
-        self.main_layout = QHBoxLayout()            # main window layout
+        self.main_layout = QVBoxLayout()            # main window layout
         self.setLayout(self.main_layout)
 
-        spb_layout = QVBoxLayout()
-        spb_layout.addWidget(self.l_threshold)
-        spb_layout.addWidget(self.spb_threshold)
+        box_default_thr_layout = QHBoxLayout()
+        box_default_thr_layout.addWidget(self.spb_default_thr)
+        box_default_thr_layout.addSpacing(10)
+        box_default_thr_layout.addWidget(self.btn_set_up)
+        self.box_default_thr.setLayout(box_default_thr_layout)
 
-        self.main_layout.addLayout(spb_layout)
-        self.main_layout.addSpacing(10)
-        self.main_layout.addWidget(self.btn_set_up, alignment=Qt.AlignBottom)
+        box_auto_thr_layout = QHBoxLayout()
+
+        spb_default_thr_layout = QVBoxLayout()
+        spb_default_thr_layout.addWidget(self.l_numb_of_accum)
+        spb_default_thr_layout.addWidget(self.spb_numb_of_accum)
+
+        box_auto_thr_layout.addLayout(spb_default_thr_layout)
+        box_auto_thr_layout.addSpacing(10)
+        box_auto_thr_layout.addWidget(self.btn_auto_set_up, alignment=Qt.AlignBottom)
+        self.box_auto_thr.setLayout(box_auto_thr_layout)
+
+        self.main_layout.addWidget(self.box_default_thr)
+        self.main_layout.addSpacing(20)
+        self.main_layout.addWidget(self.box_auto_thr)
 
     def btn_set_up_clicked(self):
-        self.signal_new_threshold.emit(self.spb_threshold.value())
+        self.signal_new_threshold.emit(self.spb_default_thr.value())
 
 
 if __name__ == '__main__':

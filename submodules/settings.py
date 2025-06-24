@@ -585,186 +585,93 @@ class ConfigurationWidget(QWidget):
         self.changed_table_items.append(column)
 
 
-# class DataBaseWidget(QWidget):
-#     def __init__(self, logger_):
-#         super().__init__()
-#         self.main_layout = QVBoxLayout()
-#         self.setLayout(self.main_layout)
-#         self.selected_date = ''
-#         self.selected_time = ''
-#         self.create_controls()
-#         self.add_widgets_to_layout()
-#
-#     def create_controls(self):
-#         self.calendar = QCalendarWidget()
-#         self.calendar.setMaximumHeight(100)
-#         self.calendar.setMaximumWidth(300)
-#
-#         self.l_time = QLabel('Time, hour')
-#         self.cb_time = QComboBox()
-#         self.cb_time.addItem('0-24', '24/7')
-#         for counter in range(24):
-#             self.cb_time.addItem(str(counter) + '-' + str(counter + 1), str(counter) + ':00:00')
-#         self.cb_time.setMaximumWidth(100)
-#         self.cb_time.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-#
-#         self.btn_search = QPushButton('Search')
-#         self.btn_search.setFixedSize(QSize(120, 30))
-#
-#         self.table = QTableWidget()
-#         self.table.setRowCount(5)
-#         self.table.setColumnCount(4)
-#         self.table.setHorizontalHeaderLabels(['Date', 'Time', 'Drone', 'Angle'])
-#         for i in range(self.table.columnCount()):
-#             self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
-#         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)     # to resize table on full template
-#         self.table.horizontalHeader().setStretchLastSection(True)
-#         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)        # disable items editing
-#
-#     def add_widgets_to_layout(self):
-#         calendar_layout = QVBoxLayout()
-#         # calendar_layout.addWidget(self.l_date, alignment=Qt.AlignTop)
-#         calendar_layout.addWidget(self.calendar, alignment=Qt.AlignTop)
-#         calendar_layout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
-#
-#         time_layout = QVBoxLayout()
-#         time_layout.addWidget(self.l_time, alignment=Qt.AlignTop)
-#         time_layout.addSpacing(25)
-#         time_layout.addWidget(self.cb_time, alignment=Qt.AlignTop)
-#         time_layout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
-#
-#         btn_search_layout = QVBoxLayout()
-#         btn_search_layout.addSpacing(50)
-#         btn_search_layout.addWidget(self.btn_search, alignment=Qt.AlignTop)
-#
-#         controls_layout = QHBoxLayout()
-#         controls_layout.addLayout(calendar_layout)
-#         controls_layout.addLayout(time_layout)
-#         controls_layout.addLayout(btn_search_layout)
-#
-#         self.main_layout.addLayout(controls_layout)
-#
-#         self.main_layout.addWidget(self.table)
-#
-#         self.main_layout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
-#
-#     def resize_table(self, row_count):
-#         self.table.setRowCount(row_count)
-#
-#     def request_status_update(self, status: bool):
-#         if status:
-#             for i in range(self.table.columnCount()):
-#                 self.table.setItem(0, i, QTableWidgetItem(''))
-#         else:
-#             self.table.setItem(0, 0, QTableWidgetItem('No'))
-#             self.table.setItem(0, 1, QTableWidgetItem('warnings'))
-#             self.table.setItem(0, 2, QTableWidgetItem('at this'))
-#             self.table.setItem(0, 3, QTableWidgetItem('time!'))
-#
-#             for i in range(self.table.columnCount()):
-#                 self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
-#
-#     def receive_requested_data(self, dataframe):
-#         if len(dataframe):
-#             self.resize_table(row_count=len(dataframe))
-#             self.request_status_update(status=True)
-#
-#             for j in range(self.table.columnCount()):
-#                 for i in range(self.table.rowCount()):
-#                     self.table.setItem(i, j, QTableWidgetItem(str(dataframe.iloc[i, j])))
-#         else:
-#             self.resize_table(row_count=1)
-#             self.request_status_update(status=False)
-
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QCalendarWidget, QLabel, QComboBox,
-    QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView, QSpacerItem, QSizePolicy
-)
-from PyQt5.QtCore import Qt
-
 class DataBaseWidget(QWidget):
     def __init__(self, logger_):
         super().__init__()
         self.logger = logger_
-        self.main_layout = QVBoxLayout()
-        self.main_layout.setAlignment(Qt.AlignTop)
-        self.setLayout(self.main_layout)
         self.selected_date = ''
         self.selected_time = ''
-        self.create_controls()
-        self.add_widgets_to_layout()
 
-        # Устанавливаем минимальный размер виджета
+        self.init_ui()
         self.setMinimumSize(500, 400)
+
+    def init_ui(self):
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+
+        self.create_controls()
+        self.create_table()
+        self.add_widgets_to_layout()
 
     def create_controls(self):
         # Calendar
         self.calendar = QCalendarWidget()
-        self.calendar.setMaximumHeight(170)  # Увеличиваем высоту для лучшей читаемости
-        self.calendar.setMaximumWidth(250)  # Уменьшаем ширину для компактности
-        self.calendar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # Фиксируем размер
+        self.calendar.setMinimumSize(200, 170)
+        self.calendar.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
-        # Time
+        # Time selector
         self.l_time = QLabel(self.tr('Time, hour'))
         self.cb_time = QComboBox()
         self.cb_time.addItem('0-24', '24/7')
-        for counter in range(24):
-            self.cb_time.addItem(f"{counter}-{counter + 1}", f"{counter}:00:00")
-        self.cb_time.setFixedWidth(100)  # Фиксированная ширина
+        for hour in range(24):
+            self.cb_time.addItem(f"{hour}-{hour + 1}", f"{hour}:00:00")
+        self.cb_time.setMinimumWidth(100)
+        self.cb_time.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.cb_time.view().setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
         # Search button
         self.btn_search = QPushButton(self.tr('Search'))
-        self.btn_search.setFixedSize(100, 30)  # Уменьшаем ширину кнопки
+        self.btn_search.setFixedSize(100, 30)
 
-        # Table
+    def create_table(self):
         self.table = QTableWidget()
-        self.table.setRowCount(5)
         self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels([self.tr('Date'), self.tr('Time'), self.tr('Drone'), self.tr('Angle')])
+        self.table.setHorizontalHeaderLabels([
+            self.tr('Date'), self.tr('Time'), self.tr('Drone'), self.tr('Angle')
+        ])
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.table.setMinimumHeight(150)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
         for i in range(self.table.columnCount()):
             self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)  # Отключаем редактирование
-        self.table.setMaximumHeight(300)  # Ограничиваем высоту таблицы
-        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Фиксируем высоту, растягиваем по ширине
+            self.table.horizontalHeader().setSectionResizeMode(i, QHeaderView.Stretch)
 
     def add_widgets_to_layout(self):
+        spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
         # Calendar layout
         calendar_layout = QVBoxLayout()
         calendar_layout.addWidget(self.calendar, alignment=Qt.AlignCenter)
-        calendar_layout.addStretch()  # Прижимаем календарь вверх
 
         # Time layout
         time_layout = QVBoxLayout()
-        time_layout.addWidget(self.l_time, alignment=Qt.AlignCenter)
-        time_layout.addWidget(self.cb_time, alignment=Qt.AlignCenter)
-        time_layout.addStretch()  # Прижимаем элементы вверх
+        time_layout.addWidget(self.l_time, alignment=Qt.AlignCenter | Qt.AlignTop)
+        time_layout.addWidget(self.cb_time, alignment=Qt.AlignCenter | Qt.AlignTop)
+        time_layout.addItem(spacerItem)
 
-        # Search button layout
-        btn_search_layout = QVBoxLayout()
-        btn_search_layout.addWidget(self.btn_search, alignment=Qt.AlignCenter)
-        btn_search_layout.addStretch()  # Прижимаем кнопку вверх
+        # Button layout
+        btn_layout = QVBoxLayout()
+        btn_layout.addWidget(self.btn_search, alignment=Qt.AlignCenter | Qt.AlignTop)
 
-        # Controls layout (calendar + time + button)
+        # Top controls layout
         controls_layout = QHBoxLayout()
         controls_layout.addLayout(calendar_layout)
-        controls_layout.addSpacing(20)  # Уменьшенный отступ между элементами
+        controls_layout.addSpacing(20)
         controls_layout.addLayout(time_layout)
         controls_layout.addSpacing(20)
-        controls_layout.addLayout(btn_search_layout)
-        controls_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Выравнивание влево и вверх
-        controls_layout.setContentsMargins(10, 10, 10, 10)  # Отступы для аккуратности
+        controls_layout.addLayout(btn_layout)
+        controls_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Main layout
+        # Final assembly
         self.main_layout.addLayout(controls_layout)
-        self.main_layout.addWidget(self.table)  # Таблица растягивается по ширине
-        self.main_layout.addStretch()  # Прижимаем содержимое вверх
-        self.main_layout.setAlignment(Qt.AlignTop)  # Выравнивание всего содержимого вверх
-        self.main_layout.setSpacing(10)  # Уменьшенный отступ между элем \
+        self.main_layout.addWidget(self.table)
+        self.main_layout.addStretch()
+        self.main_layout.setSpacing(10)
 
-    def resize_table(self, row_count):
+    def resize_table(self, row_count: int):
         self.table.setRowCount(row_count)
 
     def request_status_update(self, status: bool):
@@ -772,23 +679,26 @@ class DataBaseWidget(QWidget):
             for i in range(self.table.columnCount()):
                 self.table.setItem(0, i, QTableWidgetItem(''))
         else:
-            self.table.setItem(0, 0, QTableWidgetItem(self.tr('No')))
-            self.table.setItem(0, 1, QTableWidgetItem(self.tr('warnings')))
-            self.table.setItem(0, 2, QTableWidgetItem(self.tr('at this')))
-            self.table.setItem(0, 3, QTableWidgetItem(self.tr('time!')))
-            for i in range(self.table.columnCount()):
-                self.table.horizontalHeaderItem(i).setTextAlignment(Qt.AlignCenter)
+            no_data = [self.tr('No'), self.tr('warnings'), self.tr('at this'), self.tr('time!')]
+            for i, text in enumerate(no_data):
+                self.table.setItem(0, i, self._make_item(text))
 
     def receive_requested_data(self, dataframe):
         if len(dataframe):
-            self.resize_table(row_count=len(dataframe))
-            self.request_status_update(status=True)
-            for j in range(self.table.columnCount()):
-                for i in range(self.table.rowCount()):
-                    self.table.setItem(i, j, QTableWidgetItem(str(dataframe.iloc[i, j])))
+            self.resize_table(len(dataframe))
+            self.request_status_update(True)
+            for i in range(len(dataframe)):
+                for j in range(self.table.columnCount()):
+                    item = self._make_item(str(dataframe.iloc[i, j]))
+                    self.table.setItem(i, j, item)
         else:
-            self.resize_table(row_count=1)
-            self.request_status_update(status=False)
+            self.resize_table(1)
+            self.request_status_update(False)
+
+    def _make_item(self, text: str) -> QTableWidgetItem:
+        item = QTableWidgetItem(text)
+        item.setTextAlignment(Qt.AlignCenter)
+        return item
 
 
 if __name__ == '__main__':

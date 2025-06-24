@@ -28,7 +28,7 @@ from submodules.database_logging import DataBaseLog
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.25.6')
+        self.setWindowTitle('Shapel v25.26.2')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
