@@ -20,7 +20,7 @@ class Processor(QtCore.QObject):
     sig_calibration_coeff = pyqtSignal(list)
     sig_progrBar_value = pyqtSignal(int, int)
     sig_drons_config_changed = pyqtSignal(dict)
-    sig_norm_levels_and_pelengs = pyqtSignal(Packet_levels, list)
+    sig_norm_levels_and_pelengs = pyqtSignal(Packet_levels, list, list)
     sig_exceeded_sectors = pyqtSignal(list)
 
     def __init__(self, config: dict, dron_config: dict, logger_):
@@ -151,10 +151,10 @@ class Processor(QtCore.QObject):
             max_nearest_dron_value = 0
         return max_signals
 
-    def calculate_peleng(self, packets: list[Data_for_peleng]) -> list[Peleng]:
-        '''Рассчёт угла для отрисовки пеленга'''
+    def calculate_peleng(self, packets: list[Data_for_peleng]):
+        ''' Рассчёт угла для отрисовки пеленга '''
         pelengs = []
-        numb_of_leds = [None] * len(packets)
+        pelengs_new_formula = []
         value_left, value_right, antenna_right, antenna_left = None, None, None, None
         for i in range(len(packets)):
             if packets[i].max_antenna == self.sectors and packets[i].nearest_antenna == 1:
@@ -179,20 +179,22 @@ class Processor(QtCore.QObject):
                 antenna_left = packets[i].max_antenna
 
             mini_angle = 0
+            mini_angle_new_formula = 0
+            numerator = value_right - value_left
+            denominator = value_left + value_right
             if 2400 == self.drons[i].frequency:
-                denominator = value_left + value_right
                 if denominator != 0:
-                    mini_angle = ((value_right - value_left) / denominator) * self.a_24
+                    mini_angle = (numerator / denominator) * self.a_24
+                    mini_angle_new_formula = 62.31 * (numerator / denominator) + 2.85
                 else:
                     self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 2.4G due to zero denominator')
             elif 5800 == self.drons[i].frequency:
-                denominator = value_left + value_right
                 if denominator != 0:
-                    mini_angle = ((value_right - value_left) / denominator) * self.a_58
+                    mini_angle = (numerator / denominator) * self.a_58
+                    mini_angle_new_formula = (numerator / denominator) * self.a_58
                 else:
                     self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 5.8G due to zero denominator')
             else:
-                # вызывается деление на 0, когда диапазон неизвестен
                 self.logger.error(f'Unknown frequency for calculate peleng!')
 
             if mini_angle < -30:
@@ -201,12 +203,14 @@ class Processor(QtCore.QObject):
                 mini_angle = 30
 
             angle = antenna_left * 360 / self.sectors - self.deviation/2 + mini_angle
+            angle_new_formula = antenna_left * 360 / self.sectors - self.deviation/2 + mini_angle_new_formula
 
             power = value_left + value_right
 
             pelengs.append(Peleng(self.drons[i].name, self.drons[i].color, angle, power))
+            pelengs_new_formula.append(Peleng(self.drons[i].name, self.drons[i].color, angle_new_formula, power))
 
-        return pelengs
+        return pelengs, pelengs_new_formula
 
     def average_levels(self, packet: Packet_levels):
         if self.averaging_levels_flag:
@@ -351,7 +355,7 @@ class Processor(QtCore.QObject):
         self.sig_sector_levels.emit(Sector_levels(ampl_lvls.antenna, self.drones_name, self.colors, ampl_lvls.values))
         self.average_levels(ampl_lvls)
         if ampl_lvls.antenna == self.sectors:
-            pelengs = self.calculate_peleng(self.find_sectors_for_peleng())
+            pelengs, pelengs_new_formula = self.calculate_peleng(self.find_sectors_for_peleng())
             if self.averaging_pelengs_flag:
                 average_pelengs = self.average_pelengs(pelengs)
                 self.sig_peleng.emit(average_pelengs)
@@ -361,4 +365,5 @@ class Processor(QtCore.QObject):
                 self.filter_pelengs(pelengs)
         else:
             pelengs = []
-        self.sig_norm_levels_and_pelengs.emit(norm_lvls, pelengs)
+            pelengs_new_formula = []
+        self.sig_norm_levels_and_pelengs.emit(norm_lvls, pelengs, pelengs_new_formula)

@@ -45,6 +45,7 @@ class RecordCalibration(QDockWidget, QWidget):
 
         self.accum_norm_packet = [[] for _ in range(self.sectors)]
         self.accum_pelengs = []
+        self.accum_pelengs_new_formula = []
         self.accum_norm_counter = 666
         self.accum_norm_status = False
 
@@ -287,16 +288,20 @@ class RecordCalibration(QDockWidget, QWidget):
         self.progressBar.setValue(0)
         self.progressBar_norm.setValue(0)
 
-    def accumulate_norm_signals(self, packet: Packet_levels, pelengs: list):
+    def accumulate_norm_signals(self, packet: Packet_levels, pelengs: list, pelengs_new_formula: list):
         if self.accum_norm_status:
             antenna_index = int(packet.antenna) - 1
             if len(self.accum_norm_packet[antenna_index]) < self.accum_numb:
                 self.accum_norm_packet[antenna_index].append(packet.values[self.selected_drone_ind])
                 if len(pelengs) != 0:
                     self.accum_pelengs.append(pelengs[self.selected_drone_ind].angle)
+                if len(pelengs_new_formula) != 0:
+                    self.accum_pelengs_new_formula.append(pelengs_new_formula[self.selected_drone_ind].angle)
+
                 self.change_value_progressBar_norm(value=1)
 
-                if all(len(self.accum_norm_packet[i]) == self.accum_numb for i in range(self.sectors)) and len(self.accum_pelengs) == self.accum_numb:
+                if (all(len(self.accum_norm_packet[i]) == self.accum_numb for i in range(self.sectors))
+                        and len(self.accum_pelengs) == self.accum_numb and len(self.accum_pelengs_new_formula) == self.accum_numb):
                     self.accum_norm_status = False
                     self.logger.info('Acccumulation of normalized signals finished!')
                     self.on_accumulation_complete(is_norm=True)
@@ -304,7 +309,8 @@ class RecordCalibration(QDockWidget, QWidget):
     def on_accumulation_complete(self, is_norm: bool):
         if is_norm:
             aver_peleng = self.average_pelengs(self.accum_pelengs)
-            self.save_norm_data_to_file(self.average_accumulation(self.accum_norm_packet), aver_peleng)
+            aver_peleng_new_formula = self.average_pelengs(self.accum_pelengs_new_formula)
+            self.save_norm_data_to_file(self.average_accumulation(self.accum_norm_packet), aver_peleng, aver_peleng_new_formula)
             self.accum_norm_packet = [[] for _ in range(self.sectors)]
             self.accum_pelengs = []
             self.change_value_progressBar_norm(value=666)
@@ -362,7 +368,7 @@ class RecordCalibration(QDockWidget, QWidget):
             logger.error(f'Error with save calibration data: {e}')
             self.save_status.setText(self.tr('ERROR !'))
 
-    def save_norm_data_to_file(self, averaged_accum, peleng):
+    def save_norm_data_to_file(self, averaged_accum, peleng, peleng_new_formula):
         try:
             filename = datetime.now().strftime(f"{self.le_filename.text()}_norm %d-%m-%y") + '.txt'
 
@@ -374,7 +380,7 @@ class RecordCalibration(QDockWidget, QWidget):
                 self.record_file = open('calibration_records/' + filename, 'w')
 
             # dict_to_save = {f'{self.selected_degree}': averaged_accum}
-            data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}\t{peleng}'
+            data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}\t{peleng}\t{peleng_new_formula}'
 
             print(data_to_save)
             self.record_file.write(f'{data_to_save}\n')
