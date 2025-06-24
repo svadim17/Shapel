@@ -43,7 +43,7 @@ sensivity_coeff: 0.3
 widgets:
   levelWidget: true
   fpvVideoWidget: false
-  fpvScopeWidget: true
+  fpvScopeWidget: false
   recordCalibrationWidget: true
   settingsConfiguration: true
 configuration:

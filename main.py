@@ -57,6 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.processor = Processor(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
         self.init_dronesWidget()
         self.init_pelengWidget()
+        self.init_pelengWidget_new_formula()
         if self.levelWidget_status:
             self.init_levelWidget()
         if self.fpvVideoWidget_status:
@@ -159,6 +160,17 @@ class MainWindow(QtWidgets.QMainWindow):
                                                               self.pelengWidget.load_conf_drons(drons_conf))
         self.settingsWidget.debug.chb_peleng_level.clicked.connect(self.pelengWidget.change_view_levels_flag)
 
+    def init_pelengWidget_new_formula(self):
+        self.pelengWidget_new_formula = PelengWidget(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
+        self.pelengWidget_new_formula.setWindowTitle('Peleng New Formula')
+        self.pelengWidget_new_formula.change_view_levels_flag(self.settingsWidget.debug.chb_peleng_level.checkState())
+        self.processor.sig_peleng_new_formula.connect(self.pelengWidget_new_formula.draw_peleng)
+        # self.processor.sig_warning.connect(self.pelengWidget.change_background_color)
+        self.slider_threshold.valueChanged.connect(self.pelengWidget_new_formula.change_threshold)
+        self.dronesWidget.signal_drons_config_changed.connect(lambda drons_conf:
+                                                              self.pelengWidget_new_formula.load_conf_drons(drons_conf))
+        self.settingsWidget.debug.chb_peleng_level.clicked.connect(self.pelengWidget_new_formula.change_view_levels_flag)
+
     def init_levelWidget(self):
         self.levelWidget = PowerLevelWidget(self.settingsWidget.conf, self.settingsWidget.conf_drons)
         self.processor.sig_sector_levels.connect(self.levelWidget.processing_data)
@@ -194,6 +206,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pelengWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
         self.pelengWidget.setMinimumWidth(600)
         self.addDockWidget(Qt.RightDockWidgetArea, self.pelengWidget)
+
+        self.pelengWidget_new_formula.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.pelengWidget_new_formula.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+        self.pelengWidget_new_formula.setMinimumWidth(600)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.pelengWidget_new_formula)
+
 
         # Drones (верхний левый)
         self.dronesWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)

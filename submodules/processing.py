@@ -9,6 +9,7 @@ from submodules.basic import *
 class Processor(QtCore.QObject):
     sig_sector_levels = pyqtSignal(Sector_levels)
     sig_peleng = pyqtSignal(list)
+    sig_peleng_new_formula = pyqtSignal(list)
     sig_peleng_new = pyqtSignal(list)
     sig_filtered_pelengs = pyqtSignal(list)
     sig_spectrum = pyqtSignal(Packet_spectrum)
@@ -358,10 +359,13 @@ class Processor(QtCore.QObject):
             pelengs, pelengs_new_formula = self.calculate_peleng(self.find_sectors_for_peleng())
             if self.averaging_pelengs_flag:
                 average_pelengs = self.average_pelengs(pelengs)
+                average_pelengs_new_formula = self.average_pelengs(pelengs_new_formula)
                 self.sig_peleng.emit(average_pelengs)
+                self.sig_peleng_new_formula.emit(average_pelengs_new_formula)
                 self.filter_pelengs(average_pelengs)
             else:
                 self.sig_peleng.emit(pelengs)
+                self.sig_peleng_new_formula.emit(pelengs_new_formula)
                 self.filter_pelengs(pelengs)
         else:
             pelengs = []
