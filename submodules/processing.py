@@ -179,21 +179,18 @@ class Processor(QtCore.QObject):
                 antenna_left = packets[i].max_antenna
 
             mini_angle = 0
-            if 2400 == self.drons[i].frequency:
-                denominator = value_left + value_right
-                if denominator != 0:
-                    mini_angle = ((value_right - value_left) / denominator) * self.a_24
+            numerator = value_right - value_left
+            denominator = value_left + value_right
+            if denominator != 0:
+                if 2400 == self.drons[i].frequency:
+                        mini_angle = numerator / denominator * self.a_24
+                elif 5800 == self.drons[i].frequency:
+                        mini_angle = ((value_right - value_left) / denominator) * self.a_58
                 else:
-                    self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 2.4G due to zero denominator')
-            elif 5800 == self.drons[i].frequency:
-                denominator = value_left + value_right
-                if denominator != 0:
-                    mini_angle = ((value_right - value_left) / denominator) * self.a_58
-                else:
-                    self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} 5.8G due to zero denominator')
+                    # вызывается деление на 0, когда диапазон неизвестен
+                    self.logger.error(f'Unknown frequency for calculate peleng!')
             else:
-                # вызывается деление на 0, когда диапазон неизвестен
-                self.logger.error(f'Unknown frequency for calculate peleng!')
+                self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} due to zero denominator')
 
             if mini_angle < -30:
                 mini_angle = -30
@@ -201,7 +198,6 @@ class Processor(QtCore.QObject):
                 mini_angle = 30
 
             angle = antenna_left * 360 / self.sectors - self.deviation/2 + mini_angle
-
             power = value_left + value_right
 
             pelengs.append(Peleng(self.drons[i].name, self.drons[i].color, angle, power))
@@ -344,7 +340,6 @@ class Processor(QtCore.QObject):
             self.receive_counter += 1
             self.sig_progrBar_value.emit(self.receive_counter, self.numb_of_auto_receives)
         elif self.receive_counter == self.numb_of_auto_receives:
-            # self.calculate_threshold()
             self.fit_signals_to_threshold()
             self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
 

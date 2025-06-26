@@ -21,16 +21,18 @@ class SettingsWidget(QWidget):
         super().__init__()
         self.logger = logger_
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
+
         self.conf = {}
         self.conf_drons = {}
         self.lang_conf = {}
         self.configuration_conf = {}
-        self.setLayout(QVBoxLayout())
         self.setWindowTitle(self.tr('Settings'))
         self.drons = []
 
         self.tabWidget = QTabWidget()
-        self.layout().addWidget(self.tabWidget)
+        self.main_layout.addWidget(self.tabWidget)
 
         self.connection = ConnectionSettingsWidget(logger_=self.logger)
         self.tabWidget.addTab(self.connection, self.tr('Connection'))
@@ -38,8 +40,10 @@ class SettingsWidget(QWidget):
         self.tabWidget.addTab(self.debug, self.tr('Debug'))
 
         self.btn_dump_conf = QPushButton(self.tr('Save config'))
-        self.layout().addWidget(self.btn_dump_conf)
         self.btn_dump_conf.clicked.connect(self.dump_conf)
+        self.btn_dump_gains_conf = QPushButton(self.tr('Save gains config'))
+        self.btn_dump_gains_conf.clicked.connect(self.dump_conf_drons)
+        self.add_buttons_to_layout()
 
         self.calibration_coefficients = None
         self.peleng_coefficients = None
@@ -52,6 +56,13 @@ class SettingsWidget(QWidget):
 
         if self.conf['widgets']['settingsConfiguration']:
             self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
+
+    def add_buttons_to_layout(self):
+        btns_layout = QHBoxLayout()
+        btns_layout.addWidget(self.btn_dump_conf)
+        btns_layout.addWidget(self.btn_dump_gains_conf)
+
+        self.main_layout.addLayout(btns_layout)
 
     def dump_conf(self):
         try:
