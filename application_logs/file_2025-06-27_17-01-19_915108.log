@@ -1,0 +1,7 @@
+2025-06-27 17:01:20.100 | SUCCESS  | {} | Line   98 (settings.py): Configs were read!
+2025-06-27 17:01:20.638 | INFO     | {} | Line  288 (main.py): Initialized TCP connection.
+2025-06-27 17:01:22.309 | INFO     | {} | Line  117 (connection.py): Connecting to 192.168.150.196:55555
+2025-06-27 17:01:22.310 | SUCCESS  | {} | Line  125 (connection.py): Connected to 192.168.150.196:55555
+2025-06-27 17:01:22.310 | INFO     | {} | Line  340 (connection.py): Requested for calibration coefficients.
+2025-06-27 17:01:22.411 | INFO     | {} | Line  352 (connection.py): Requested for all FPV Scope thresholds ...
+2025-06-27 17:01:28.869 | ERROR    | {} | Line  591 (connection.py): Critical error in TCP thread: [WinError 10038] Сделана попытка выполнить операцию на объекте, не являющемся сокетом

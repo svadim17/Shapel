@@ -1,6 +1,6 @@
 language: ru
 connection:
-  timeout: 200
+  timeout: 20
   ip_address: 192.168.150.196
   port_numb: '55555'
 threshold: 3132
@@ -30,7 +30,7 @@ peleng_coefficients:
 log:
   viewed_messages: 30
 debug:
-  connection_type: Player
+  connection_type: TCP
   player_record: mavic24_2kruga.txt
   warning_digital_sound: skala_digital.mp3
   warning_analog_sound: skala_analog.mp3
@@ -42,10 +42,11 @@ data_char:
 sensivity_coeff: 0.3
 widgets:
   levelWidget: true
-  fpvVideoWidget: false
+  fpvVideoWidget: true
   fpvScopeWidget: true
-  recordCalibrationWidget: true
-  settingsConfiguration: true
+  recordCalibrationWidget: false
+  settingsDebug: false
+  settingsConfiguration: false
 configuration:
   frequencies:
     DJI_Mavic2_2_4:

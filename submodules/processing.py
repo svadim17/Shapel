@@ -40,7 +40,7 @@ class Processor(QtCore.QObject):
         self.receive_accum = []
         self.extra_auto_gains = [None] * self.number_of_drons
         self.time_for_one_receive = 0.205           # in seconds for 1 antenna
-        self.calibration_time = 30
+        self.calibration_time = 20
         self.numb_of_auto_receives = 0
         self.no_warning_counter = 0
         self.no_warning_comparator = 50    # counter comparing with comparator to refresh buttons colors
@@ -83,6 +83,10 @@ class Processor(QtCore.QObject):
             self.record_file = open('records/' + datetime.now().strftime("record %d_%m_%y %H_%M") + '.txt', 'w')
         else:
             self.record_file.close()
+
+    def update_calibration_coeff(self, new_coeffs: dict):
+        self.calibr_coeff = new_coeffs
+        self.logger.success(f'Calibration coefficients were updated on {self.calibr_coeff}')
 
     def data_log(self, packet: Packet_levels):
         self.record_file.write(f'{str(packet._asdict())}\n')
@@ -288,7 +292,11 @@ class Processor(QtCore.QObject):
                 dron_values[j][i] = self.receive_accum[i][j]        # 2D array (8x60)
 
         for i in range(self.number_of_drons):
-            self.extra_auto_gains[i] = (self.threshold * self.sensivity_coeff) / (max(dron_values[i]))
+            if max(dron_values[i]) == 0:
+                maximum = 1
+            else:
+                maximum = max(dron_values[i])
+            self.extra_auto_gains[i] = self.threshold * self.sensivity_coeff / maximum
 
         self.send_calibration_coeff()
 

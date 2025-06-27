@@ -23,8 +23,6 @@ PARITY_NONE, PARITY_EVEN, PARITY_ODD, PARITY_MARK, PARITY_SPACE = 'N', 'E', 'O',
 STOPBITS_ONE, STOPBITS_ONE_POINT_FIVE, STOPBITS_TWO = (1, 1.5, 2)
 FIVEBITS, SIXBITS, SEVENBITS, EIGHTBITS = (5, 6, 7, 8)
 
-logger.add('logs/circle.txt', level='DEBUG')
-
 
 def get_available_ports():                          # find available ports
     ports = QSerialPortInfo.availablePorts()        # get info about ports
@@ -58,6 +56,8 @@ class TCPTread(QtCore.QThread):
     signal_fpvScope_packet = QtCore.pyqtSignal(dict)
     signal_fpvData_packet = QtCore.pyqtSignal(list)
     signal_success_change_ip = QtCore.pyqtSignal(bool)
+    signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
+    signal_fpvScope_thresholds = QtCore.pyqtSignal(list, str)
 
     def __init__(self, calibration_coeff: dict, frequencies, thread_timeout, logger_):
         QtCore.QThread.__init__(self)
@@ -93,48 +93,6 @@ class TCPTread(QtCore.QThread):
         self.config = {}
         self.read_configs()
 
-    def send_detect_settings(self):
-        self.drons_gains = []
-        self.drons = []
-
-        # Read drons gains from config
-        for dict_name, conf in self.conf_drons.items():
-            self.drons.append(basic.Dron(dict_name, conf))
-        for i in range(len(self.drons)):
-            self.drons_gains.append(self.drons[i].gains)
-        self.drons_gains = sum(self.drons_gains, [])            # convert list of lists to one list
-
-        # Read threshold from config if it is the first time
-        if self.threshold is None:
-            self.threshold = self.config['threshold']
-
-        # Send data by TCP
-        sender = b'\x0a'
-        receiver = b'\x0d'
-        code = b'\xaa'
-        end_mark = b'\x5a' * 4
-
-        threshold_in_bytes = self.threshold.to_bytes(2, 'little')
-        drons_gains_in_bytes = bytes(self.drons_gains)
-
-        data = threshold_in_bytes + drons_gains_in_bytes
-
-        data_length = (len(data)).to_bytes(1, 'little')
-
-        command = sender + receiver + code + data_length + data + end_mark
-
-        self.client.send(command)
-        self.logger.success(f'Threshold and gains were sent by command {command}')
-        self.msleep(100)
-
-    def receive_detect_settings(self):
-        command = b'\x0a\x0d\xab\x00'
-        self.logger.info(f'Sending command {command} to receive detect settings.')
-        self.client.send(command)
-        self.msleep(100)
-
-
-
     def read_configs(self):
         with open('config_drons.yaml', encoding='utf-8') as file:
             self.conf_drons = dict(yaml.load(file, Loader=yaml.SafeLoader))
@@ -157,13 +115,18 @@ class TCPTread(QtCore.QThread):
         self.logger.info(f'Connecting to {ip_address}:{port}')
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.settimeout(2)       # in seconds
+        self.client.settimeout(5)       # in seconds
         self.run_flag = True
         # self.client.connect((address))
         try:
             self.client.connect((ip_address, port))
             self.logger.success(f'Connected to {ip_address}:{port}')
             self.start()
+            self.send_cmd_for_calibr_coeff()
+            self.msleep(100)
+            self.send_cmd_for_fpvScope_thresholds()
+            self.msleep(100)
+            self.send_cmd_to_receive_detect_settings()
         except Exception as e:
             self.logger.error(f'Can\'t connect to {ip_address}:{port}')
 
@@ -183,7 +146,6 @@ class TCPTread(QtCore.QThread):
             self.frequencies_packet.update({freq_numb: freq_samples})
         if len(self.frequencies_packet) == self.number_of_drons_on_low_freq + self.number_of_drons_on_high_freq:
             self.signal_frequencies.emit(self.frequencies_packet)
-            # print(self.frequencies_packet)
 
     def unpack_data(self, type_of_packet: int, sector_number: int, data):
         if type_of_packet == 1:
@@ -250,6 +212,51 @@ class TCPTread(QtCore.QThread):
         if ip_status and port_status:
             return True
 
+    def send_cmd_to_receive_detect_settings(self):
+        try:
+            command = b'\x0a\x0d\xab\x00'
+            self.client.send(command)
+            self.logger.info(f'Command {command} to receive detect settings was sent.')
+        except Exception as e:
+            self.logger.error(f'Error with sending command to receive detect settings.')
+        self.msleep(100)
+
+    def send_detect_settings(self):
+        try:
+            self.drons_gains = []
+            self.drons = []
+
+            # Read drons gains from config
+            for dict_name, conf in self.conf_drons.items():
+                self.drons.append(basic.Dron(dict_name, conf))
+            for i in range(len(self.drons)):
+                self.drons_gains.append(self.drons[i].gains)
+            self.drons_gains = sum(self.drons_gains, [])            # convert list of lists to one list
+
+            # Read threshold from config if it is the first time
+            if self.threshold is None:
+                self.threshold = self.config['threshold']
+
+            # Send data by TCP
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xaa'
+            end_mark = b'\x5a' * 4
+
+            threshold_in_bytes = self.threshold.to_bytes(2, 'little')
+            drons_gains_in_bytes = bytes(self.drons_gains)
+
+            data = threshold_in_bytes + drons_gains_in_bytes
+
+            data_length = (len(data)).to_bytes(1, 'little')
+
+            command = sender + receiver + code + data_length + data + end_mark
+            self.client.send(command)
+            self.logger.info(f'Threshold and gains were sent by command {command}')
+        except Exception as e:
+            self.logger.error(f'Error with sending threshold and gains! {e}')
+        self.msleep(100)
+
     def send_new_freq_to_controller(self, new_freq: dict):
         try:
             self.logger.info('Writing new frequencies to controller...')
@@ -303,31 +310,93 @@ class TCPTread(QtCore.QThread):
             self.logger.success('Command was sent. Starting receive...')
             self.msleep(100)
         except Exception as e:
-            self.logger.error(f'Error sending data: {str(e)}')
+            self.logger.error(f'Error sending data: {e}')
 
     def send_command_to_change_ip(self, new_ip: str, new_port: str):
-        self.logger.info(f'Changing IP address on {new_ip}:{new_port} ...')
-        if self.is_valid_new_ip(new_ip, new_port):
+        try:
+            if self.is_valid_new_ip(new_ip, new_port):
+                sender = b'\x0a'
+                receiver = b'\x0d'
+                code = b'\x10'
+                data_length = b'\x06'
+                ip_big_endian = socket.inet_aton(new_ip)
+                port = struct.pack('<H', int(new_port))
+
+                command = sender + receiver + code + data_length + ip_big_endian + port
+                self.client.send(command)
+                self.logger.info(f'Requested for changing IP address on {new_ip}:{new_port} ...')
+            else:
+                self.logger.error(f'Invalid new IP address or port!')
+        except Exception as e:
+            self.logger.error(f'Error with request for change IP! {e}')
+
+    def send_cmd_for_calibr_coeff(self):
+        try:
             sender = b'\x0a'
             receiver = b'\x0d'
-            code = b'\x10'
-            data_length = b'\x06'
-            ip_big_endian = socket.inet_aton(new_ip)
-            port = struct.pack('<H', int(new_port))
-
-            command = sender + receiver + code + data_length + ip_big_endian + port
+            code = b'\xad'
+            command = sender + receiver + code
             self.client.send(command)
-        else:
-            self.logger.error(f'Invalid new IP address or port!')
+            self.logger.info(f'Requested for calibration coefficients.')
+        except Exception as e:
+            self.logger.error(f'Error with request for calibration coefficients! {e}')
 
-    def recv_exact(self, n):
-        data = b''
-        while len(data) < n:
-            packet = self.client.recv(n - len(data))
-            if not packet:
-                raise ConnectionError("Connection lost during recv_exact.")
-            data += packet
-        return data
+    def send_cmd_for_fpvScope_thresholds(self):
+        try:
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xae'
+            data_length = b'\x00'
+            command = sender + receiver + code + data_length
+            self.client.send(command)
+            self.logger.info(f'Requested for all FPV Scope thresholds ...')
+        except Exception as e:
+            self.logger.error(f'Error with request for all FPV Scope thresholds! {e}')
+
+    def send_all_fpvScope_thresholds(self, values: list[int]):
+        try:
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xae'
+            data_length = (len(values)).to_bytes(1, 'little')
+            values_in_bytes = bytes(values)
+            command = sender + receiver + code + data_length + values_in_bytes
+            self.client.send(command)
+            self.logger.info(f'All FPV Scope thresholds were sent.')
+        except Exception as e:
+            self.logger.error(f'Error with sending all FPV Scope thresholds! {e}')
+
+    def send_fpvScope_threshold(self, index: int, value: int):
+        try:
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xaf'
+            index_in_bytes = index.to_bytes(1, 'little')
+            value_in_bytes = value.to_bytes(1, 'little')
+            command = sender + receiver + code + index_in_bytes + value_in_bytes
+            self.client.send(command)
+            self.logger.info(f'FPV Scope threshold was sent.')
+        except Exception as e:
+            self.logger.error(f'Error with sending FPV Scope threshold! {e}')
+
+    def send_cmd_to_change_fpvScope_mode(self, mode: str, freq_index: int):
+        try:
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xa1'
+            command = bytes()
+            if mode == 'auto':
+                fpv_mode = b'\x01'
+                command = sender + receiver + code + fpv_mode
+                self.client.send(command)
+            elif mode == 'manual':
+                fpv_mode = b'\x02'
+                freq_index_in_bytes = freq_index.to_bytes(1, 'little')
+                command = sender + receiver + code + fpv_mode + freq_index_in_bytes
+            self.client.send(command)
+            self.logger.info(f'FPV Scope mode was sent on {mode}.')
+        except Exception as e:
+            self.logger.error(f'Error with sending FPV Scope threshold! {e}')
 
     def handle_data_packet(self):
         type_of_packet = int.from_bytes(self.recv_exact(1), 'little')
@@ -367,62 +436,116 @@ class TCPTread(QtCore.QThread):
             self.collect_data_from_server(threshold, gains)
 
     def handle_fpv_data(self):
-        self.logger.info('Reading FPV data.')
+        try:
+            # self.logger.info('Reading FPV data.')
 
-        data_length = int.from_bytes(self.recv_exact(1), 'little')
-        all_fpv_data = self.recv_exact(data_length)
+            data_length = int.from_bytes(self.recv_exact(1), 'little')
+            all_fpv_data = self.recv_exact(data_length)
 
-        # Unpack data
-        fpv_data = []
-        offset = 0
-        while offset + 5 <= len(all_fpv_data):          # 5 bytes for sector(1), ADC(2) and dispersion(2)
-            sector = all_fpv_data[offset]
-            average_ADC_value = int.from_bytes(all_fpv_data[offset + 1:offset + 3], 'little')
-            dispersion = int.from_bytes(all_fpv_data[offset + 3:offset + 5], 'little')
-            fpv_data.append({'sector': sector, 'average_ADC_value': average_ADC_value, 'dispersion': dispersion})
-            offset += 5
+            # Unpack data
+            fpv_data = []
+            offset = 0
+            while offset + 5 <= len(all_fpv_data):          # 5 bytes for sector(1), ADC(2) and dispersion(2)
+                sector = all_fpv_data[offset]
+                average_ADC_value = int.from_bytes(all_fpv_data[offset + 1:offset + 3], 'little')
+                dispersion = int.from_bytes(all_fpv_data[offset + 3:offset + 5], 'little')
+                fpv_data.append({'sector': sector, 'average_ADC_value': average_ADC_value, 'dispersion': dispersion})
+                offset += 5
 
-        self.signal_fpvData_packet.emit(fpv_data)
-        # print(f'FPV Data packet: {fpv_data}')
+            self.signal_fpvData_packet.emit(fpv_data)
+            # print(f'FPV Data packet: {fpv_data}')
+        except Exception as e:
+            self.logger.error(f'Error with handle FPV Data! {e}')
 
     def handle_fpvScope_data(self):
-        # self.logger.trace('Reading FPV Scope data.')
+        try:
+            # self.logger.trace('Reading FPV Scope data.')
+            data_length = int.from_bytes(self.recv_exact(2), 'little')
+            all_freqs_data = self.recv_exact(data_length)
 
-        data_length = int.from_bytes(self.recv_exact(2), 'little')
-        all_freqs_data = self.recv_exact(data_length)
+            # Unpack data
+            if len(all_freqs_data) % 6 != 0:
+                self.logger.warning(f'Unexpected fpvScope data length: {len(all_freqs_data)} not divisible by 6.')
 
-        # Unpack data
-        if len(all_freqs_data) % 6 != 0:
-            self.logger.warning(f'Unexpected fpvScope data length: {len(all_freqs_data)} not divisible by 6.')
+            num_blocks = len(all_freqs_data) // 6
+            fpvScope_data = {'1G2': [], '3G3': [], '5G8': []}
+            for i in range(num_blocks):
+                offset = i * 6
+                freq = int.from_bytes(all_freqs_data[offset:offset + 2], 'little')
+                rssi = int.from_bytes(all_freqs_data[offset + 2:offset + 4], 'little')
+                fpv_coeff = int.from_bytes(all_freqs_data[offset + 4:offset + 6], 'little')
+                packet = {'freq': freq, 'rssi': rssi, 'fpv_coeff': fpv_coeff}
+                if 1080 <= freq <= 1258:
+                    fpvScope_data['1G2'].append(packet)
+                elif 1080 <= freq <= 1258:
+                    fpvScope_data['3G3'].append(packet)
+                elif 4990 <= freq <= 6028:
+                    fpvScope_data['5G8'].append(packet)
 
-        num_blocks = len(all_freqs_data) // 6
-        fpvScope_data = {'1G2': [], '3G3': [], '5G8': []}
-        for i in range(num_blocks):
-            offset = i * 6
-            freq = int.from_bytes(all_freqs_data[offset:offset + 2], 'little')
-            rssi = int.from_bytes(all_freqs_data[offset + 2:offset + 4], 'little')
-            fpv_coeff = int.from_bytes(all_freqs_data[offset + 4:offset + 6], 'little')
-            packet = {'freq': freq, 'rssi': rssi, 'fpv_coeff': fpv_coeff}
-            if 1080 <= freq <= 1258:
-                fpvScope_data['1G2'].append(packet)
-            elif 1080 <= freq <= 1258:
-                fpvScope_data['3G3'].append(packet)
-            elif 4990 <= freq <= 6028:
-                fpvScope_data['5G8'].append(packet)
-
-        self.signal_fpvScope_packet.emit(fpvScope_data)
-        # print(f'FPV Scope Data packet: {fpvScope_data}')
+            self.signal_fpvScope_packet.emit(fpvScope_data)
+            print(f'FPV Scope Data packet: {fpvScope_data}')
+        except Exception as e:
+            self.logger.error(f'Error with handle FPV Scope data! {e}')
 
     def handle_new_ip_response(self):
-        data_length = self.recv_exact(1)
-        status = self.recv_exact(1)
-        if status == b'\x00':
-            self.logger.success(f'IP address changed!')
-            self.signal_success_change_ip.emit(True)
-        elif status == b'\x01':
-            self.logger.error(f'Error with changing IP address!')
-        else:
-            self.logger.error(f'Unknown response: {status.hex()}')
+        try:
+            data_length = self.recv_exact(1)
+            status = self.recv_exact(1)
+            if status == b'\x00':
+                self.logger.success(f'IP address changed!')
+                self.signal_success_change_ip.emit(True)
+            elif status == b'\x01':
+                self.logger.error(f'Error with changing IP address!')
+            else:
+                self.logger.error(f'Unknown response: {status.hex()}')
+        except Exception as e:
+            self.logger.error(f'Error with handle setting up new IP response! {e}')
+
+    def handle_change_gain_response(self):
+        try:
+            status = self.recv_exact(1)
+            if status == b'\x00':
+                self.logger.success(f'Remote control applied new threshold and gains!')
+            else:
+                self.logger.warning(f'Remote control didn`t apply new threshold and gains!')
+        except Exception as e:
+            self.logger.error(f'Error with handle changing gain response! {e}')
+
+    def handle_calibr_coeff(self):
+        try:
+            calibr_coeff_2G4 = list(self.recv_exact(6))     # list for convert to int
+            calibr_coeff_5G8 = list(self.recv_exact(6))
+            for i in range(6):
+                calibr_coeff_2G4[i] /= 100
+                calibr_coeff_5G8[i] /= 100
+            self.logger.info('Received calibration coefficients')
+
+            new_coeffs = {2400: calibr_coeff_2G4, 5800: calibr_coeff_5G8}
+            self.signal_new_calibr_coeff.emit(new_coeffs)
+        except Exception as e:
+            self.logger.error(f'Error with receive calibration coefficients! {e}')
+
+    def handle_fpvScope_threshold(self):
+        try:
+            data_length = int.from_bytes(self.recv_exact(1), 'little')
+            if data_length != 1:
+                all_thresholds = list(self.recv_exact(data_length))
+                self.logger.info('Received FPV Scope thresholds')
+                self.signal_fpvScope_thresholds.emit(all_thresholds, 'init')
+            else:
+                response = self.recv_exact(1)
+                self.logger.info('Remote control received all thresholds')
+        except Exception as e:
+            self.logger.error(f'Error with receive FPV Scope thresholds! {e}')
+
+    def recv_exact(self, n):
+        data = b''
+        while len(data) < n:
+            packet = self.client.recv(n - len(data))
+            if not packet:
+                raise ConnectionError("Connection lost during recv_exact.")
+            data += packet
+        return data
 
     def run(self):
         buffer = bytearray()    # for check start marker
@@ -430,8 +553,8 @@ class TCPTread(QtCore.QThread):
             try:
                 byte = self.client.recv(1)
                 if not byte:
-                    self.logger.error('TCP connection closed!')
-                    break
+                    self.logger.warning('TCP: empty packet, it can be disconnected!')
+                    continue
 
                 buffer.append(byte[0])
                 if len(buffer) > 4:
@@ -443,21 +566,41 @@ class TCPTread(QtCore.QThread):
                     continue
 
                 if byte == b'\x0d':
-                    if self.recv_exact(1) == b'\x0a':
-                        cmd = self.recv_exact(1)
-                        if b'\xd0' <= cmd <= b'\xe7':
-                            self.handle_freq_packet(cmd)        # frequency packet
-                        elif cmd == b'\xab':
-                            self.handle_detect_settings()       # detect settings packet
-                        elif cmd == b'\x0e':
-                            self.handle_fpv_data()              # fpv data packet
-                        elif cmd == b'\x0f':
-                            self.handle_fpvScope_data()              # fpvScope data packet
-                        elif cmd == b'\x10':
-                            self.handle_new_ip_response()
+                    try:
+                        if self.recv_exact(1) == b'\x0a':
+                            cmd = self.recv_exact(1)
+                            if b'\xd0' <= cmd <= b'\xe7':
+                                self.handle_freq_packet(cmd)        # frequency packet
+                            elif cmd == b'\xab':
+                                self.handle_detect_settings()       # detect settings packet
+                            elif cmd == b'\x0e':
+                                self.handle_fpv_data()              # fpv data packet
+                            elif cmd == b'\x0f':
+                                self.handle_fpvScope_data()              # fpvScope data packet
+                            elif cmd == b'\x10':
+                                self.handle_new_ip_response()
+                            elif cmd == b'\xaa':
+                                self.handle_change_gain_response()      # response about receive new threshold and gains
+                            elif cmd == b'\xad':
+                                self.handle_calibr_coeff()
+                            elif cmd == b'\xae':
+                                self.handle_fpvScope_threshold()
+                            else:
+                                self.logger.warning(f'Received unknown code: {cmd.hex()}')
+                    except Exception as e:
+                        self.logger.warning(f'Error parsing command: {e}')
+                        continue
+
                 self.msleep(self.thread_timeout)
+            except socket.timeout:
+                continue
+            except (ConnectionResetError, ConnectionAbortedError) as e:
+                self.logger.error(f'Connection closed unexpectedly: {e}')
+                self.run_flag = False
+                break
             except Exception as e:
-                self.logger.error(f'Error in TCP thread: {e}')
+                self.logger.error(f'Critical error in TCP thread: {e}')
+                self.run_flag = False
                 break
 
 
@@ -472,6 +615,8 @@ class EmulationTread(QtCore.QThread):
     signal_success_change_ip = QtCore.pyqtSignal(bool)
     signal_fpvScope_packet = QtCore.pyqtSignal(dict)
     signal_fpvData_packet = QtCore.pyqtSignal(list)
+    signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
+    signal_fpvScope_thresholds = QtCore.pyqtSignal(list)
 
     def __init__(self, number_of_drons, thread_timeout, logger_):
         self.logger = logger_
@@ -594,6 +739,8 @@ class PlayerTread(QtCore.QThread):
     signal_fpvScope_packet = QtCore.pyqtSignal(dict)
     signal_fpvData_packet = QtCore.pyqtSignal(list)
     signal_success_change_ip = QtCore.pyqtSignal(bool)
+    signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
+    signal_fpvScope_thresholds = QtCore.pyqtSignal(list)
 
     def __init__(self, number_of_drons, record, thread_timeout, logger_):
         self.logger = logger_
@@ -729,6 +876,8 @@ class SerialSpinTread(QtCore.QThread):
     signal_set_angle = QtCore.pyqtSignal(str)
     signal_spin_done = QtCore.pyqtSignal(bool)
     signal_ready = QtCore.pyqtSignal()
+    signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
+    signal_fpvScope_thresholds = QtCore.pyqtSignal(list)
 
     def __init__(self, logger_, port_name='COM5', baudrate=9600):
         QtCore.QThread.__init__(self)

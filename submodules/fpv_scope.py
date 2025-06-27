@@ -10,13 +10,19 @@ import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import LinearRegionItem
 import yaml
+import math
+from submodules.select_fpv_scope_mode import FPVScopeModeWindow
 
 
 class FPVScopeWidget(QDockWidget, QWidget):
-    signal_freq_point_clicked = pyqtSignal(str)
+    signal_freq_point_clicked = pyqtSignal(int, str)
     signal_exceed_threshold = pyqtSignal(bool)
+    signal_threshold_change = pyqtSignal(int, int)
+    signal_all_thresholds_change = pyqtSignal(list)
+    signal_fpvScope_mode = pyqtSignal(str, int)
+    signal_change_radio_btn = pyqtSignal(bool)
 
-    def __init__(self, configuration_conf: dict, logger_):
+    def __init__(self, configuration_conf: dict, delay_on_max: int, logger_):
         super().__init__()
         self.logger = logger_
         self.setWindowTitle(self.tr('FPV Scope'))
@@ -25,13 +31,15 @@ class FPVScopeWidget(QDockWidget, QWidget):
         self.fpv_default_values = configuration_conf['fpv_scope_default_values']
         self.manual_mode = False
         self.selected_up_index = None
+        self.increase_thr = 10
 
         self.freqs, self.freqs_len, self.thresholds, self.x_indices = self.get_data_from_dict()
-        self.fpv_coeff_values = np.random.uniform(0, 10, self.freqs_len)
-        self.fpv_rssi_values = np.random.uniform(0, 5, self.freqs_len)
+        self.fpv_coeff_values = np.random.uniform(1, 10, self.freqs_len)
+        self.fpv_rssi_values = np.random.uniform(1, 5, self.freqs_len)
 
-        self.threshold_window = ThresholdWindow()
-        self.threshold_window.signal_new_threshold.connect(self.reset_threshold)
+        self.fpvModeWidnow = FPVScopeModeWindow(wait_time=delay_on_max)
+        self.fpvModeWidnow.signal_manual_mode_chosen.connect(self.change_mode_on_manual)
+        self.fpvModeWidnow.signal_increase_threshold.connect(self.increase_exceeded_threshold)
 
         self.central_widget = QWidget(self)
         self.setWidget(self.central_widget)
@@ -126,7 +134,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
 
         # Узлы для порога
         self.threshold_scatter = DraggableScatter(self.x_indices, self.thresholds, self.threshold_line)
-        self.threshold_scatter.signal_new_thresholds.connect(self.update_thresholds)
+        self.threshold_scatter.signal_threshold_changed.connect(self.update_thresholds)
         self.plot.addItem(self.threshold_scatter)
 
         # Легенда
@@ -137,9 +145,10 @@ class FPVScopeWidget(QDockWidget, QWidget):
         legend.addItem(self.rssi_line, self.tr('RSSI'))
 
         self.btn_threshold = QPushButton()
+        self.btn_threshold.setToolTip(self.tr('Auto threshold'))
         self.btn_threshold.setIcon(QIcon(r'assets/icons/threshold.png'))
         self.btn_threshold.setFixedSize(30, 30)
-        self.btn_threshold.clicked.connect(self.threshold_window.show)
+        self.btn_threshold.clicked.connect(self.reset_threshold)
         proxy = pg.Qt.QtWidgets.QGraphicsProxyWidget()
         proxy.setWidget(self.btn_threshold)
         self.plot.scene().addItem(proxy)
@@ -164,25 +173,54 @@ class FPVScopeWidget(QDockWidget, QWidget):
     def add_widgets_to_layout(self):
         self.main_layout.addWidget(self.graphWindow)
 
-    def update_thresholds(self, new_values: list):
-        self.thresholds = new_values
-        self.is_exceed_threshold()
+    def update_thresholds(self, new_values, data_type: str):
+        try:
+            if data_type == 'init':
+                """ init thresholds from remote control """
+                self.thresholds = new_values
+                self.logger.info(f'FPV Scope init threshold was updated')
+            elif data_type == 'auto':
+                """ clicked auto threshold button """
+                for i in range(len(self.thresholds)):
+                    self.thresholds[i] = int(self.fpv_coeff_values[i] + new_values)
+                    if self.thresholds[i] > 100:
+                        self.thresholds[i] = 100
+                self.signal_all_thresholds_change.emit(self.thresholds)
+                self.logger.info(f'FPV Scope threshold was updated on auto values')
+            elif data_type == 'manual':
+                """ manual changing one scatter """
+                index, value = new_values[0], new_values[1]
+                self.thresholds[index] = value
+                self.signal_threshold_change.emit(index, value)
+                self.logger.info(f'FPV Scope threshold was updated on manual value')
+            elif data_type == 'increased':
+                self.thresholds[self.exceeded_freq] = int(self.fpv_coeff_values[self.exceeded_freq] + self.increase_thr)
+                if self.thresholds[self.exceeded_freq] > 100:
+                    self.thresholds[self.exceeded_freq] = 100
+                self.signal_threshold_change.emit(self.exceeded_freq, self.thresholds[self.exceeded_freq])
+                self.logger.info(f'FPV Scope warning threshold was increased on 10')
+            self.is_exceed_threshold()
+            self.threshold_line.setData(x=self.x_indices, y=self.thresholds)
+            self.threshold_scatter.update_threshold(new_threshold=self.thresholds)
 
-    def reset_threshold(self, new_threshold: int):
-        for i in range(len(self.thresholds)):
-            self.thresholds[i] = new_threshold
-        self.threshold_line.setData(x=self.x_indices, y=self.thresholds)
-        self.threshold_scatter.update_threshold(new_threshold=self.thresholds)
-        self.is_exceed_threshold()
-        self.logger.info(f'Default threshold was changed on {new_threshold}')
+        except Exception as e:
+            self.logger.error(f'Error with updating FPV Scope threshold! {e}')
+
+    def reset_threshold(self):
+        self.update_thresholds(new_values=self.increase_thr, data_type='auto')
+        self.logger.info(f'Default threshold was changed on automatic values (increase on {self.increase_thr}')
+
+    def increase_exceeded_threshold(self):
+        if self.exceeded_freq is not None:
+            self.update_thresholds(new_values=0, data_type='increased')
 
     def on_upward_point_clicked(self, scatter, points):
         if not points:
             return
         point = points[0]
         index = int(point.pos().x())
-        self.change_mode_on_manual(status=True)
         self.select_upward_point(index)
+        self.change_mode_on_manual(status=True)
 
     def select_upward_point(self, index: int):
         for point in self.fpv_coeff_scatter.points():
@@ -194,7 +232,7 @@ class FPVScopeWidget(QDockWidget, QWidget):
             point.setBrush(pg.mkBrush(255, 0, 0, 180))
             point.setSize(14)
             self.selected_up_index = index
-            self.signal_freq_point_clicked.emit(str(self.freqs[index]))
+            self.signal_freq_point_clicked.emit(index, str(self.freqs[index]))
             self.logger.info(f'Selected freq: {self.freqs[index]}')
 
     def keyPressEvent(self, event):
@@ -211,9 +249,30 @@ class FPVScopeWidget(QDockWidget, QWidget):
             return
 
         self.select_upward_point(self.selected_up_index)
+        self.change_mode_on_manual(True)
 
     def change_mode_on_manual(self, status: bool):
         self.manual_mode = status
+        if status:
+            if self.selected_up_index is None:
+                # self.signal_fpvScope_mode.emit('manual', 0)
+                if self.exceeded_freq is None:
+                    self.signal_fpvScope_mode.emit('manual', 0)
+                else:
+                    self.signal_fpvScope_mode.emit('manual', self.exceeded_freq)   # если нажата кнопка из вспылвающего окна
+            else:
+                self.signal_fpvScope_mode.emit('manual', self.selected_up_index)
+            self.signal_change_radio_btn.emit(False)
+        else:
+            self.signal_fpvScope_mode.emit('auto', 0)
+            self.clear_selected_point()
+            self.signal_change_radio_btn.emit(True)
+
+    def clear_selected_point(self):
+        for point in self.fpv_coeff_scatter.points():
+            point.setBrush(pg.mkBrush(255, 255, 255, 180))
+            point.setSize(10)
+        self.selected_up_index = None
 
     def collect_config(self):
         conf = {}
@@ -251,15 +310,21 @@ class FPVScopeWidget(QDockWidget, QWidget):
         if exceeded_indexes:
             view_box.setBackgroundColor(QtGui.QColor(255, 110, 110, 60))
             self.signal_exceed_threshold.emit(True)
+            if not self.manual_mode:
+                self.fpvModeWidnow.open_window()
+            self.exceeded_freq = exceeded_indexes[-1]
         else:
             view_box.setBackgroundColor(QtGui.QColor(0, 0, 0))
             self.signal_exceed_threshold.emit(False)
+            self.exceeded_freq = None
 
     def update_graph(self, packet: dict):
         """ FPV Scope Data packet: {'1G2': [{'freq': 1080, 'rssi': 808, 'fpv_coeff': 8},
                                            {'freq': 1120, 'rssi': 749, 'fpv_coeff': 13}, ... """
-        new_fpv_coeff, new_rssi = [0] * self.freqs_len, [0] * self.freqs_len        # init lists for new values
-        self.logger.info(packet)
+        # Начинаем с текущих значений, чтобы сохранить те, что не обновляются
+        new_fpv_coeff = self.fpv_coeff_values.copy()
+        new_rssi = self.fpv_rssi_values.copy()
+        # self.logger.info(packet)
         for band, data in packet.items():
             default_fpv_min, default_fpv_max = self.fpv_default_values[band]['fpv_coeff']
             default_rssi_min, default_rssi_max = self.fpv_default_values[band]['rssi']
@@ -268,6 +333,8 @@ class FPVScopeWidget(QDockWidget, QWidget):
                 freq = freq_dict['freq']
                 if freq not in self.freqs:
                     self.logger.warning(f'Unknown freq {freq} from from fpvScope packet.')
+                    continue
+
                 index = np.where(self.freqs == freq)[0][0]
                 norm_fpv_coeff = self.normalize_value(freq_dict['fpv_coeff'], default_fpv_min, default_fpv_max)
                 norm_rssi = self.normalize_value(freq_dict['rssi'], default_rssi_min, default_rssi_max)
@@ -275,20 +342,24 @@ class FPVScopeWidget(QDockWidget, QWidget):
                 new_fpv_coeff[index] = norm_fpv_coeff
                 new_rssi[index] = norm_rssi
 
-        self.fpv_coeff_values = np.array(new_fpv_coeff)
-        self.fpv_rssi_values = np.array(new_rssi)
+        # Сохраняем обновлённые значения
+        self.fpv_coeff_values = new_fpv_coeff
+        self.fpv_rssi_values = new_rssi
 
         # Update graphs
         self.fpv_coeff_line.setData(self.x_indices, self.fpv_coeff_values)
         self.fpv_coeff_scatter.setData(self.x_indices, self.fpv_coeff_values)
         self.rssi_line.setData(self.x_indices, self.fpv_rssi_values)
 
+        # Восстановить подсветку выбранной точки
+        if self.selected_up_index is not None:
+            self.select_upward_point(self.selected_up_index)
+
         self.is_exceed_threshold()
 
 
 class DraggableScatter(pg.ScatterPlotItem):
-    """ Создание интерактивных узлов порога """
-    signal_new_thresholds = pyqtSignal(list)
+    signal_threshold_changed = pyqtSignal(list, str)
 
     def __init__(self, x, y, line_item):
         super().__init__(x=x, y=y, symbol='o', size=8, pen='y', brush='r')
@@ -322,73 +393,17 @@ class DraggableScatter(pg.ScatterPlotItem):
             ev.accept()
 
     def mouseReleaseEvent(self, ev):
+        if self.dragged_point is not None:
+            index = self.dragged_point
+            value = self.y_data[index]
+            self.signal_threshold_changed.emit([index, int(value)], 'manual')
         self.dragged_point = None
         ev.accept()
-        self.signal_new_thresholds.emit(self.y_data.tolist())
 
     def update_threshold(self, new_threshold: list):
         self.y_data = np.array(new_threshold)
         self.setData(x=self.x_data, y=self.y_data)
         self.line_item.setData(x=self.x_data, y=self.y_data)
-
-
-class ThresholdWindow(QDialog):
-    signal_new_threshold = pyqtSignal(int)
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle(self.tr('Threshold settings'))
-        self.create_controls()
-        self.add_widgets_to_layout()
-        # self.setFixedWidth(220)
-        self.setWindowFlag(Qt.WindowStaysOnTopHint)
-
-    def create_controls(self):
-        self.box_default_thr = QGroupBox(self.tr('Default threshold'))
-        self.spb_default_thr = QSpinBox()
-        self.spb_default_thr.setFixedSize(QSize(100, 40))
-        self.spb_default_thr.setRange(1, 100)
-        self.spb_default_thr.setValue(25)
-        self.spb_default_thr.setSingleStep(1)
-        self.btn_set_up = QPushButton(self.tr('Set up'))
-        self.btn_set_up.clicked.connect(self.btn_set_up_clicked)
-
-        self.box_auto_thr = QGroupBox(self.tr('Auto threshold'))
-        self.l_numb_of_accum = QLabel(self.tr('Number of accumulation'))
-        self.spb_numb_of_accum = QSpinBox()
-        self.spb_numb_of_accum.setFixedSize(QSize(100, 40))
-        self.spb_numb_of_accum.setRange(1, 5)
-        self.spb_numb_of_accum.setValue(1)
-        self.spb_numb_of_accum.setSingleStep(1)
-        self.btn_auto_set_up = QPushButton(self.tr('Set up'))
-
-    def add_widgets_to_layout(self):
-        self.main_layout = QVBoxLayout()            # main window layout
-        self.setLayout(self.main_layout)
-
-        box_default_thr_layout = QHBoxLayout()
-        box_default_thr_layout.addWidget(self.spb_default_thr)
-        box_default_thr_layout.addSpacing(10)
-        box_default_thr_layout.addWidget(self.btn_set_up)
-        self.box_default_thr.setLayout(box_default_thr_layout)
-
-        box_auto_thr_layout = QHBoxLayout()
-
-        spb_default_thr_layout = QVBoxLayout()
-        spb_default_thr_layout.addWidget(self.l_numb_of_accum)
-        spb_default_thr_layout.addWidget(self.spb_numb_of_accum)
-
-        box_auto_thr_layout.addLayout(spb_default_thr_layout)
-        box_auto_thr_layout.addSpacing(10)
-        box_auto_thr_layout.addWidget(self.btn_auto_set_up, alignment=Qt.AlignBottom)
-        self.box_auto_thr.setLayout(box_auto_thr_layout)
-
-        self.main_layout.addWidget(self.box_default_thr)
-        self.main_layout.addSpacing(20)
-        self.main_layout.addWidget(self.box_auto_thr)
-
-    def btn_set_up_clicked(self):
-        self.signal_new_threshold.emit(self.spb_default_thr.value())
 
 
 if __name__ == '__main__':

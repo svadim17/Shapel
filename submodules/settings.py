@@ -31,17 +31,20 @@ class SettingsWidget(QWidget):
         self.setWindowTitle(self.tr('Settings'))
         self.drons = []
 
+        self.read_conf()
+
         self.tabWidget = QTabWidget()
         self.main_layout.addWidget(self.tabWidget)
 
         self.connection = ConnectionSettingsWidget(logger_=self.logger)
         self.tabWidget.addTab(self.connection, self.tr('Connection'))
         self.debug = DebugWidget(logger_=self.logger)
-        self.tabWidget.addTab(self.debug, self.tr('Debug'))
+        if self.conf['widgets']['settingsDebug']:
+            self.tabWidget.addTab(self.debug, self.tr('Debug'))
 
         self.btn_dump_conf = QPushButton(self.tr('Save config'))
         self.btn_dump_conf.clicked.connect(self.dump_conf)
-        self.btn_dump_gains_conf = QPushButton(self.tr('Save gains config'))
+        self.btn_dump_gains_conf = QPushButton(self.tr('Save gains'))
         self.btn_dump_gains_conf.clicked.connect(self.dump_conf_drons)
         self.add_buttons_to_layout()
 
@@ -59,10 +62,10 @@ class SettingsWidget(QWidget):
 
     def add_buttons_to_layout(self):
         btns_layout = QHBoxLayout()
-        btns_layout.addWidget(self.btn_dump_conf)
         btns_layout.addWidget(self.btn_dump_gains_conf)
-
         self.main_layout.addLayout(btns_layout)
+
+        self.connection.main_layout.addWidget(self.btn_dump_conf, alignment=Qt.AlignBottom)
 
     def dump_conf(self):
         try:
@@ -105,7 +108,6 @@ class SettingsWidget(QWidget):
 
     def set_conf(self):
         try:
-            self.read_conf()
             self.connection.set_conf(self.conf['connection'])
             self.debug.set_conf(self.conf['debug'])
             self.calibration_coefficients = self.conf['calibration_coefficients']
@@ -120,7 +122,7 @@ class ConnectionSettingsWidget(QWidget):
     def __init__(self, logger_):
         super().__init__()
         self.logger = logger_
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.main_layout)
 
@@ -163,6 +165,9 @@ class ConnectionSettingsWidget(QWidget):
         self.btn_change_ip = QPushButton(self.tr('Change'))
 
     def add_widgets_to_layout(self):
+        main_tab_layout = QHBoxLayout()
+        main_tab_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
         spacerItem = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         box_tcp_layout = QVBoxLayout()
@@ -213,9 +218,12 @@ class ConnectionSettingsWidget(QWidget):
         left_layout.addSpacing(10)
         left_layout.addWidget(self.box_change_ip)
 
-        self.main_layout.addLayout(left_layout)
-        self.main_layout.addSpacing(20)
-        self.main_layout.addLayout(right_layout)
+        main_tab_layout.addLayout(left_layout)
+        main_tab_layout.addSpacing(20)
+        main_tab_layout.addLayout(right_layout)
+
+        self.main_layout.addLayout(main_tab_layout)
+        self.main_layout.addItem(spacerItem)
 
     def btn_check_tcp_clicked(self):
         self.set_loading_icon()
@@ -288,6 +296,8 @@ class DebugWidget(QWidget):
 
         self.create_widgets()
         self.add_widgets_to_layout()
+
+
 
     def create_widgets(self):
         self.box_connection = QGroupBox(self.tr('Connection'))
@@ -404,22 +414,18 @@ class DebugWidget(QWidget):
             self.chb_peleng_level.setChecked(conf['levels_in_peleng'])
             self.chb_average_peleng.setChecked(conf['average_levels_for_peleng'])
             self.chb_average_spectrum.setChecked(conf['average_spectrum'])
+            self.digital_sound = pygame.mixer.Sound(self.digital_sound_path + self.cb_digital_sound.currentText())
+            self.analog_sound = pygame.mixer.Sound(self.analog_sound_path + self.cb_analog_sound.currentText())
         except:
             self.logger.error('Can\'t load debug conf')
 
     def event_play_digital_sound(self, status: bool):
-        pygame.mixer.music.load(self.digital_sound_path + self.cb_digital_sound.currentText())
         if status and self.sound_flag:
-            pygame.mixer.music.play()
-        else:
-            pygame.mixer.stop()
+            self.digital_sound.play()
 
     def event_play_analog_sound(self, status: bool):
-        pygame.mixer.music.load(self.analog_sound_path + self.cb_analog_sound.currentText())
         if status and self.sound_flag:
-            pygame.mixer.music.play()
-        else:
-            pygame.mixer.stop()
+            self.analog_sound.play()
 
     def event_check_sound(self, type: str):
         if type == 'digital':

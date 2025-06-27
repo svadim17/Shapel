@@ -4,8 +4,8 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal, QSignalMapper
 
 
 class FpvScopeSettings(QDockWidget, QWidget):
-
     signal_manual_mode_state = pyqtSignal(bool)
+    signal_fpvScope_mode = pyqtSignal(str, int)
 
     def __init__(self, logger_):
         super().__init__()
@@ -18,9 +18,10 @@ class FpvScopeSettings(QDockWidget, QWidget):
         self.main_layout.setAlignment(Qt.AlignLeft)
         self.widget().setLayout(self.main_layout)
 
+        self.manual_mode = False
+
         self.create_widgets()
         self.add_widgets_to_layout()
-
 
     def create_widgets(self):
         self.radio_btn_auto = QRadioButton(self.tr('Auto mode'))
@@ -40,7 +41,7 @@ class FpvScopeSettings(QDockWidget, QWidget):
         self.spb_delay_on_max = QSpinBox()
         self.spb_delay_on_max.setFixedSize(QSize(100, 40))
         self.spb_delay_on_max.setRange(1, 15)
-        self.spb_delay_on_max.setValue(3)
+        self.spb_delay_on_max.setValue(5)
         self.spb_delay_on_max.setSingleStep(1)
 
     def add_widgets_to_layout(self):
@@ -63,16 +64,26 @@ class FpvScopeSettings(QDockWidget, QWidget):
         self.main_layout.addSpacing(10)
         self.main_layout.addLayout(cur_freq_layout)
 
-    def change_mode_on_manual(self, freq: str):
+    def change_mode_on_manual(self, index: int, freq: str):
         self.radio_btn_manual.setChecked(True)
         self.le_cur_freq.setText(freq)
+        self.manual_mode = True
+        self.signal_fpvScope_mode.emit('manual', index)
         self.logger.info('FPV Scope mode was changed on manual')
 
     def btn_radio_changed(self):
         if self.radio_btn_manual.isChecked():
-            self.logger.info('FPV Scope mode was changed on manual')
+            self.manual_mode = True
             self.signal_manual_mode_state.emit(True)
-
+            self.signal_fpvScope_mode.emit('manual', 0)
         elif self.radio_btn_auto.isChecked():
-            self.logger.info('FPV Scope mode was changed on auto')
             self.signal_manual_mode_state.emit(False)
+            self.signal_fpvScope_mode.emit('auto', 0)
+            self.manual_mode = False
+
+    def change_radio_button_on_auto(self, status: bool):
+        if status:
+            self.radio_btn_auto.setChecked(True)
+        else:
+            self.radio_btn_manual.setChecked(True)
+

@@ -9,6 +9,7 @@ class CalibrationWindow(QDialog):
         super().__init__()
         self.sensivity_coeff = sensivity_coeff
         self.setWindowTitle(self.tr('Calibration settings'))
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.create_controls()
         self.add_widgets_to_layout()
 
@@ -16,7 +17,7 @@ class CalibrationWindow(QDialog):
         self.l_spb_calibration_time = QLabel(self.tr('Calibration time (sec)'))
         self.spb_calibration_time = QSpinBox()
         self.spb_calibration_time.setFixedSize(QSize(100, 40))
-        self.spb_calibration_time.setRange(5, 120)
+        self.spb_calibration_time.setRange(5, 60)
         self.spb_calibration_time.setSingleStep(5)
 
         self.btn_calibrate = QPushButton(self.tr('Calibrate'))

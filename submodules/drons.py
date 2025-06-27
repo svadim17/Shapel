@@ -14,7 +14,7 @@ class DronsCtrlWidget(QDockWidget, QWidget):
 
     def __init__(self, drons: list, threshold: int):
         super().__init__()
-        self.setWindowTitle(self.tr('Drones'))
+        self.setWindowTitle(self.tr('UAV'))
         self.setWidget(QWidget())
 
         # drons.pop(0)
@@ -206,7 +206,6 @@ class Drons_detect_settings(QDialog):
         self.dron.gains = self.get_gains()
 
     def set_calibration(self, coeff):
-
         for i in range(len(self.slider_ant)):
             self.dron.gains[i] = math.ceil(self.dron.gains[i] * float(coeff))
             self.slider_ant[i].setValue(self.dron.gains[i])
@@ -221,11 +220,6 @@ class Drons_detect_settings(QDialog):
     def set_gains(self, gains):
         for i in range(len(self.slider_ant)):
             self.slider_ant[i].setValue(gains[i])
-
-    # def closeEvent(self, event):
-    #     self.dron.gains = self.get_gains()
-    #     # print('self.dron.gains = ', self.dron.gains)
-    #     self.signal_gain_changed.emit(self.dron.collect())
 
     def on_slider_value_changed(self, index, value):
         self.label_slider_value[index].setText(str(value))

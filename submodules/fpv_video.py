@@ -15,7 +15,7 @@ class FPVVideoWidget(QDockWidget, QWidget):
 
         self.setWidget(QWidget())
         self.main_layout = QVBoxLayout()  # create vertical layout for buttons
-        self.main_layout.setAlignment(Qt.AlignTop)
+        # self.main_layout.setAlignment(Qt.AlignTop)
         self.widget().setLayout(self.main_layout)
 
         self.viewfinder = QCameraViewfinder()

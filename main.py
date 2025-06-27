@@ -25,6 +25,20 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 from submodules.database_logging import DataBaseLog
 
 
+logger.remove(0)
+log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
+# logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
+logger.add("application_logs/file_{time}.log",
+           level="TRACE",
+           format=log_format,
+           colorize=False,
+           backtrace=True,
+           diagnose=True,
+           rotation='10 MB',
+           retention='14 days',
+           enqueue=True)
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -167,15 +181,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_fpvVideoWidget(self):
         self.fpvVideoWidget = FPVVideoWidget(self.settingsWidget.connection.cb_camera.currentData(), self.logger)
+        self.settingsWidget.connection.cb_camera.currentTextChanged.connect(lambda: self.fpvVideoWidget.change_camera(
+            self.settingsWidget.connection.cb_camera.currentData()))
 
     def init_fpvScopeWidget(self):
-        self.fpvScopeWidget = FPVScopeWidget(self.settingsWidget.configuration_conf, self.logger)
         self.fpvScopeSettingsWidget = FpvScopeSettings(self.logger)
+        self.fpvScopeWidget = FPVScopeWidget(self.settingsWidget.configuration_conf,
+                                             self.fpvScopeSettingsWidget.spb_delay_on_max.value(),
+                                             self.logger)
 
         self.settingsWidget.btn_dump_conf.clicked.connect(self.fpvScopeWidget.dump_configuration_conf)
         self.fpvScopeWidget.signal_freq_point_clicked.connect(self.fpvScopeSettingsWidget.change_mode_on_manual)
         self.fpvScopeWidget.signal_exceed_threshold.connect(self.settingsWidget.debug.event_play_analog_sound)
         self.fpvScopeSettingsWidget.signal_manual_mode_state.connect(self.fpvScopeWidget.change_mode_on_manual)
+        self.fpvScopeSettingsWidget.spb_delay_on_max.valueChanged.connect(self.fpvScopeWidget.fpvModeWidnow.change_wait_time)
 
     def init_recordCalibrationWidget(self):
         self.recordCalibrationWidget = RecordCalibration(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
@@ -305,6 +324,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connection.signal_threshold.connect(lambda threshold: self.settingsWidget.conf.update({'threshold': threshold}))
         self.connection.signal_success_change_ip.connect(self.settingsWidget.connection.update_tcp_parameters)
 
+        self.connection.signal_new_calibr_coeff.connect(self.processor.update_calibration_coeff)
+        self.connection.signal_fpvScope_thresholds.connect(self.fpvScopeWidget.update_thresholds)
+
         # Calibration coefficients signal for TCP connection
         self.connection.signal_calibration.connect(self.dronesWidget.set_calibration)
 
@@ -318,9 +340,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                             new_ip=self.settingsWidget.connection.le_new_ip.text(),
                                                             new_port=self.settingsWidget.connection.le_new_port.text()))
         self.settingsWidget.connection.btn_send_detect_settings.clicked.connect(self.connection.send_detect_settings)
-        self.settingsWidget.connection.btn_receive_detect_settings.clicked.connect(self.connection.receive_detect_settings)
-        self.settingsWidget.connection.cb_camera.currentTextChanged.connect(lambda: self.fpvVideoWidget.change_camera(
-            self.settingsWidget.connection.cb_camera.currentData()))
+        self.settingsWidget.connection.btn_receive_detect_settings.clicked.connect(self.connection.send_cmd_to_receive_detect_settings)
 
         self.settingsWidget.database.btn_search.clicked.connect(lambda: self.DataBaseLog.get_data_from_database(
                                         cur_date=self.settingsWidget.database.calendar.selectedDate().toString("yyyy-MM-dd"),
@@ -337,6 +357,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self.fpvScopeWidget_status:
             self.connection.signal_fpvScope_packet.connect(self.fpvScopeWidget.update_graph)
+            self.fpvScopeWidget.signal_all_thresholds_change.connect(self.connection.send_all_fpvScope_thresholds)
+            self.fpvScopeWidget.signal_threshold_change.connect(self.connection.send_fpvScope_threshold)
+            self.fpvScopeWidget.signal_fpvScope_mode.connect(self.connection.send_cmd_to_change_fpvScope_mode)
+            self.fpvScopeWidget.signal_change_radio_btn.connect(self.fpvScopeSettingsWidget.change_radio_button_on_auto)
 
         if self.settingsConfiguration_status:
             self.connection.signal_frequencies.connect(self.settingsWidget.configuration.set_data_to_table)
@@ -353,6 +377,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.act_sound.setIcon(QIcon(rf'assets/icons/sound_off.png'))
         self.settingsWidget.debug.sound_flag_changed(status)
+
 
 def load_translator(app, language):
     translator = QTranslator()

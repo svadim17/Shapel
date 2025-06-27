@@ -9,12 +9,12 @@
         <translation>Настройки калибровки</translation>
     </message>
     <message>
-        <location filename="../submodules/calibration.py" line="16"/>
+        <location filename="../submodules/calibration.py" line="17"/>
         <source>Calibration time (sec)</source>
         <translation>Время калибровки (сек)</translation>
     </message>
     <message>
-        <location filename="../submodules/calibration.py" line="22"/>
+        <location filename="../submodules/calibration.py" line="23"/>
         <source>Calibrate</source>
         <translation>Откалибровать</translation>
     </message>
@@ -22,27 +22,27 @@
 <context>
     <name>ConfigurationWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="460"/>
+        <location filename="../submodules/settings.py" line="481"/>
         <source>Frequency settings</source>
         <translation>Настройки частот</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="462"/>
+        <location filename="../submodules/settings.py" line="483"/>
         <source>Read from file</source>
         <translation>Читать из файла</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="466"/>
+        <location filename="../submodules/settings.py" line="487"/>
         <source>Read from controller</source>
         <translation>Читать из контроллера</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="469"/>
+        <location filename="../submodules/settings.py" line="490"/>
         <source>Write to file</source>
         <translation>Записать в файл</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="473"/>
+        <location filename="../submodules/settings.py" line="494"/>
         <source>Write to controller</source>
         <translation>Записать в контроллер</translation>
     </message>
@@ -50,67 +50,67 @@
 <context>
     <name>ConnectionSettingsWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="120"/>
+        <location filename="../submodules/settings.py" line="133"/>
         <source>Timeout</source>
         <translation>Задержка</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="125"/>
+        <location filename="../submodules/settings.py" line="138"/>
         <source>TCP (remote control)</source>
         <translation>TCP (пульт)</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="126"/>
+        <location filename="../submodules/settings.py" line="139"/>
         <source>IP address</source>
         <translation>IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="128"/>
+        <location filename="../submodules/settings.py" line="141"/>
         <source>Port number</source>
         <translation>Номер порта</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="131"/>
+        <location filename="../submodules/settings.py" line="144"/>
         <source>Check TCP</source>
         <translation>Проверить TCP</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="136"/>
+        <location filename="../submodules/settings.py" line="149"/>
         <source>Detect config</source>
         <translation>Конфиг обнаружения</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="137"/>
+        <location filename="../submodules/settings.py" line="150"/>
         <source>Send config</source>
         <translation>Отправить конфиг</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="138"/>
+        <location filename="../submodules/settings.py" line="151"/>
         <source>Receive config</source>
         <translation>Получить конфиг</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="140"/>
+        <location filename="../submodules/settings.py" line="153"/>
         <source>Camera device</source>
         <translation>Камера</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="147"/>
+        <location filename="../submodules/settings.py" line="160"/>
         <source>Change IP address</source>
         <translation>Изменить IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="149"/>
+        <location filename="../submodules/settings.py" line="162"/>
         <source>Enter new IP address</source>
         <translation>Введите новый IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="151"/>
+        <location filename="../submodules/settings.py" line="164"/>
         <source>Enter new port</source>
         <translation>Введите новый порт</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="152"/>
+        <location filename="../submodules/settings.py" line="165"/>
         <source>Change</source>
         <translation>Изменить</translation>
     </message>
@@ -118,52 +118,52 @@
 <context>
     <name>DataBaseWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="708"/>
+        <location filename="../submodules/settings.py" line="634"/>
         <source>Time, hour</source>
         <translation>Время, час</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="717"/>
+        <location filename="../submodules/settings.py" line="644"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="724"/>
+        <location filename="../submodules/settings.py" line="650"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="724"/>
+        <location filename="../submodules/settings.py" line="650"/>
         <source>Time</source>
         <translation>Время</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="724"/>
+        <location filename="../submodules/settings.py" line="650"/>
         <source>Drone</source>
         <translation>Дрон</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="724"/>
+        <location filename="../submodules/settings.py" line="650"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="775"/>
+        <location filename="../submodules/settings.py" line="703"/>
         <source>No</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="776"/>
+        <location filename="../submodules/settings.py" line="703"/>
         <source>warnings</source>
         <translation>обнаружений</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="777"/>
+        <location filename="../submodules/settings.py" line="703"/>
         <source>at this</source>
         <translation>в это</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="778"/>
+        <location filename="../submodules/settings.py" line="703"/>
         <source>time!</source>
         <translation>время!</translation>
     </message>
@@ -171,52 +171,52 @@
 <context>
     <name>DebugWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="282"/>
+        <location filename="../submodules/settings.py" line="303"/>
         <source>Connection</source>
         <translation>Соединение</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="283"/>
+        <location filename="../submodules/settings.py" line="304"/>
         <source>Connection type</source>
         <translation>Тип соединения</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="286"/>
+        <location filename="../submodules/settings.py" line="307"/>
         <source>Record for &apos;player&apos;</source>
         <translation>Запись для &apos;player&apos;</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="291"/>
+        <location filename="../submodules/settings.py" line="312"/>
         <source>Sound</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="313"/>
+        <location filename="../submodules/settings.py" line="334"/>
         <source>Other</source>
         <translation>Другое</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="314"/>
+        <location filename="../submodules/settings.py" line="335"/>
         <source>Consider signal levels in Peleng</source>
         <translation>Учитывать уровни сигналов в Пеленге</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="316"/>
+        <location filename="../submodules/settings.py" line="337"/>
         <source>Average pelengs</source>
         <translation>Усреднение пеленгов</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="318"/>
+        <location filename="../submodules/settings.py" line="339"/>
         <source>Average spectrum</source>
         <translation>Усреднение спектра</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="294"/>
+        <location filename="../submodules/settings.py" line="315"/>
         <source>Digital channel</source>
         <translation>Цифвровой канал</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="304"/>
+        <location filename="../submodules/settings.py" line="325"/>
         <source>Analog channel</source>
         <translation>Аналоговый канал</translation>
     </message>
@@ -226,7 +226,7 @@
     <message>
         <location filename="../submodules/drons.py" line="17"/>
         <source>Drones</source>
-        <translation>Дроны</translation>
+        <translation type="obsolete">Дроны</translation>
     </message>
     <message>
         <location filename="../submodules/drons.py" line="70"/>
@@ -237,6 +237,11 @@
         <location filename="../submodules/drons.py" line="71"/>
         <source>5.8 GHz</source>
         <translation>5.8 ГГц</translation>
+    </message>
+    <message>
+        <location filename="../submodules/drons.py" line="17"/>
+        <source>UAV</source>
+        <translation>БЛА</translation>
     </message>
 </context>
 <context>
@@ -253,36 +258,99 @@
     </message>
 </context>
 <context>
+    <name>FPVScopeModeWindow</name>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="10"/>
+        <source>Select FPV Scope mode</source>
+        <translation type="obsolete">Выбор режима FPV Захвата</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="25"/>
+        <source>Auto mode</source>
+        <translation type="obsolete">Авто режим</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="31"/>
+        <source>Manual mode</source>
+        <translation type="obsolete">Ручной режим</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="56"/>
+        <source>Left seconds {remaining}...</source>
+        <translation type="obsolete">Осталось секунд {remaining}...</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="75"/>
+        <source>Left seconds {self.wait_time}...</source>
+        <translation type="obsolete">Осталось секунд {self.wait_time}...</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="12"/>
+        <source>Detected FPV</source>
+        <translation>Обнаружен FPV</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="27"/>
+        <source>Increase threshold</source>
+        <translation>Увеличить порог</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="33"/>
+        <source>Continue scanning</source>
+        <translation>Продолжить сканирование</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="39"/>
+        <source>Manual channels settings</source>
+        <translation>Ручная настройка каналов</translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="65"/>
+        <source>{remaining}...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="93"/>
+        <source>{self.wait_time}...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FPVScopeWidget</name>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="22"/>
+        <location filename="../submodules/fpv_scope.py" line="28"/>
         <source>FPV Scope</source>
         <translation>FPV Захват</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="67"/>
+        <location filename="../submodules/fpv_scope.py" line="73"/>
         <source>Frequencies</source>
         <translation>Частоты</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="70"/>
+        <location filename="../submodules/fpv_scope.py" line="76"/>
         <source>Frequency (MHz)</source>
         <translation>Частота (МГц)</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="136"/>
+        <location filename="../submodules/fpv_scope.py" line="142"/>
         <source>Threshold</source>
         <translation>Порог</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="137"/>
+        <location filename="../submodules/fpv_scope.py" line="143"/>
         <source>FPV Coeff</source>
         <translation>FPV Коэфф</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="138"/>
+        <location filename="../submodules/fpv_scope.py" line="144"/>
         <source>RSSI</source>
         <translation>RSSI</translation>
+    </message>
+    <message>
+        <location filename="../submodules/fpv_scope.py" line="147"/>
+        <source>Auto threshold</source>
+        <translation>Автоматический порог</translation>
     </message>
 </context>
 <context>
@@ -301,22 +369,22 @@
         <translation>Настройки FPV Захвата</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="26"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="27"/>
         <source>Auto mode</source>
         <translation>Авто режим</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="28"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="29"/>
         <source>Manual mode</source>
         <translation>Ручной режим</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="33"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="34"/>
         <source>Current frequency</source>
         <translation>Текущая частота</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="39"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="40"/>
         <source>Delay on max [s]</source>
         <translation>Задержка на макс [сек]</translation>
     </message>
@@ -324,27 +392,27 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main.py" line="88"/>
+        <location filename="../main.py" line="103"/>
         <source>Start</source>
         <translation>Старт</translation>
     </message>
     <message>
-        <location filename="../main.py" line="93"/>
+        <location filename="../main.py" line="108"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../main.py" line="102"/>
+        <location filename="../main.py" line="117"/>
         <source>Sound</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../main.py" line="108"/>
+        <location filename="../main.py" line="123"/>
         <source>Toolbar</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../main.py" line="184"/>
+        <location filename="../main.py" line="204"/>
         <source>Configuration</source>
         <translation>Конфигурация</translation>
     </message>
@@ -466,29 +534,39 @@
 <context>
     <name>SettingsWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="29"/>
+        <location filename="../submodules/settings.py" line="31"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="36"/>
+        <location filename="../submodules/settings.py" line="40"/>
         <source>Connection</source>
         <translation>Соединение</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="38"/>
+        <location filename="../submodules/settings.py" line="43"/>
         <source>Debug</source>
         <translation>Отладка</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="40"/>
+        <location filename="../submodules/settings.py" line="45"/>
         <source>Save config</source>
         <translation>Сохранить конфиг</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="51"/>
+        <location filename="../submodules/settings.py" line="58"/>
         <source>Database</source>
         <translation>База данных</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="44"/>
+        <source>Save gains config</source>
+        <translation type="obsolete">Сохранить конфиг усилений</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="47"/>
+        <source>Save gains</source>
+        <translation>Сохранить усиления</translation>
     </message>
 </context>
 <context>
@@ -496,17 +574,32 @@
     <message>
         <location filename="../submodules/fpv_scope.py" line="341"/>
         <source>Reset threshold</source>
-        <translation>Сброс порога</translation>
+        <translation type="obsolete">Сброс порога</translation>
     </message>
     <message>
         <location filename="../submodules/fpv_scope.py" line="347"/>
-        <source>New threshold</source>
-        <translation>Новый порог</translation>
+        <source>Default threshold</source>
+        <translation type="obsolete">Стандартный порог</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="354"/>
+        <location filename="../submodules/fpv_scope.py" line="363"/>
         <source>Set up</source>
-        <translation>Установить</translation>
+        <translation type="obsolete">Установить</translation>
+    </message>
+    <message>
+        <location filename="../submodules/fpv_scope.py" line="340"/>
+        <source>Threshold settings</source>
+        <translation type="obsolete">Настройки порога</translation>
+    </message>
+    <message>
+        <location filename="../submodules/fpv_scope.py" line="356"/>
+        <source>Auto threshold</source>
+        <translation type="obsolete">Автоматический порог</translation>
+    </message>
+    <message>
+        <location filename="../submodules/fpv_scope.py" line="357"/>
+        <source>Number of accumulation</source>
+        <translation type="obsolete">Число накоплений</translation>
     </message>
 </context>
 </TS>
