@@ -194,7 +194,8 @@ class Processor(QtCore.QObject):
                     # вызывается деление на 0, когда диапазон неизвестен
                     self.logger.error(f'Unknown frequency for calculate peleng!')
             else:
-                self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} due to zero denominator')
+                pass
+                # self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} due to zero denominator')
 
             if mini_angle < -30:
                 mini_angle = -30
