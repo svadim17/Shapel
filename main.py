@@ -42,7 +42,7 @@ logger.add("application_logs/file_{time}.log",
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.26.4')
+        self.setWindowTitle('Shapel v25.26.5')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
