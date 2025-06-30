@@ -3,7 +3,7 @@ import time
 import os
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QAction, QToolBar, QTabWidget, QSizePolicy, QSlider, \
-    QPushButton, QDockWidget, QVBoxLayout, QMainWindow
+    QPushButton, QDockWidget, QVBoxLayout, QMainWindow, QSplashScreen
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QTranslator
 from loguru import logger
@@ -42,7 +42,7 @@ logger.add("application_logs/file_{time}.log",
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.26.5')
+        self.setWindowTitle('Shapel v25.27.1')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -378,6 +378,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.act_sound.setIcon(QIcon(rf'assets/icons/sound_off.png'))
         self.settingsWidget.debug.sound_flag_changed(status)
 
+    def load_data(self, splash):
+        splash.setFont(font)
+        for i in range(1, 11):
+            time.sleep(0.1)  # <-- эмулируем загрузку
+            QApplication.processEvents()
+
 
 def load_translator(app, language):
     translator = QTranslator()
@@ -413,6 +419,15 @@ if __name__ == '__main__':
     with open('config.yaml') as f:
         conf = dict(yaml.load(f, Loader=yaml.SafeLoader))
     translator = load_translator(app=app, language=conf['language'])
+
+    # 🚀 Splash screen
+    splash = QSplashScreen(QtGui.QPixmap('assets/logo/splash_1.png'))
+    splash.show()
+    app.processEvents()
+
+
     main_window = MainWindow()
+    main_window.load_data(splash)
+    splash.finish(main_window)
     main_window.show()
     sys.exit(app.exec())
