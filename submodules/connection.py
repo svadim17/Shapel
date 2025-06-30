@@ -280,7 +280,7 @@ class TCPTread(QtCore.QThread):
 
             self.msleep(100)
         except Exception as e:
-            print(f'Error sending data: {str(e)}')
+            self.logger.error(f'Error sending data: {str(e)}')
 
     def send_cmd_for_change_mode(self, mode: CtrlMode, type: str):
         try:
@@ -483,7 +483,7 @@ class TCPTread(QtCore.QThread):
                     fpvScope_data['5G8'].append(packet)
 
             self.signal_fpvScope_packet.emit(fpvScope_data)
-            print(f'FPV Scope Data packet: {fpvScope_data}')
+            # print(f'FPV Scope Data packet: {fpvScope_data}')
         except Exception as e:
             self.logger.error(f'Error with handle FPV Scope data! {e}')
 

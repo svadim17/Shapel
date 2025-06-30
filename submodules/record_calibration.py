@@ -353,7 +353,7 @@ class RecordCalibration(QDockWidget, QWidget):
             # dict_to_save = {f'{self.selected_degree}': averaged_accum}
             data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}'
 
-            print(data_to_save)
+            # print(data_to_save)
             self.record_file.write(f'{data_to_save}\n')
             self.record_file.close()
             self.save_status.setText(self.tr('Successful saved!'))
@@ -376,7 +376,7 @@ class RecordCalibration(QDockWidget, QWidget):
             # dict_to_save = {f'{self.selected_degree}': averaged_accum}
             data_to_save = f'{self.selected_degree}\t{averaged_accum[0]}\t{averaged_accum[1]}\t{averaged_accum[2]}\t{averaged_accum[3]}\t{averaged_accum[4]}\t{averaged_accum[5]}\t{self.selected_drone}\t{peleng}'
 
-            print(data_to_save)
+            # print(data_to_save)
             self.record_file.write(f'{data_to_save}\n')
             self.record_file.close()
             self.save_status.setText(self.tr('Successful saved!'))
