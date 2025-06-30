@@ -189,7 +189,7 @@ class Processor(QtCore.QObject):
                 if 2400 == self.drons[i].frequency:
                         mini_angle = numerator / denominator * self.a_24
                 elif 5800 == self.drons[i].frequency:
-                        mini_angle = ((value_right - value_left) / denominator) * self.a_58
+                        mini_angle = numerator / denominator * self.a_58
                 else:
                     # вызывается деление на 0, когда диапазон неизвестен
                     self.logger.error(f'Unknown frequency for calculate peleng!')
@@ -202,6 +202,7 @@ class Processor(QtCore.QObject):
             elif mini_angle > 30:
                 mini_angle = 30
 
+            mini_angle -= self.b_24
             angle = antenna_left * 360 / self.sectors - self.deviation/2 + mini_angle
             power = value_left + value_right
 

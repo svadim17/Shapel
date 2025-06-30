@@ -23,10 +23,10 @@ calibration_coefficients:
 peleng_coefficients:
   24:
     a: 60
-    b: 1.2
+    b: 15
   58:
     a: 30
-    b: 0.7
+    b: 15
 log:
   viewed_messages: 30
 debug:
