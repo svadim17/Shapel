@@ -25,7 +25,8 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 from submodules.database_logging import DataBaseLog
 
 
-logger.remove(0)
+for handler_id in list(logger._core.handlers.keys()):
+    logger.remove(handler_id)
 log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
 # logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
 logger.add("application_logs/file_{time}.log",
@@ -381,7 +382,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def load_data(self, splash):
         splash.setFont(font)
         for i in range(1, 11):
-            time.sleep(0.1)  # <-- эмулируем загрузку
+            time.sleep(0.05)  # <-- эмулируем загрузку
             QApplication.processEvents()
 
 
