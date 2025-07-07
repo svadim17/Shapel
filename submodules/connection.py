@@ -58,6 +58,7 @@ class TCPTread(QtCore.QThread):
     signal_success_change_ip = QtCore.pyqtSignal(bool)
     signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
     signal_fpvScope_thresholds = QtCore.pyqtSignal(list, str)
+    signal_peleng_shift_angles = QtCore.pyqtSignal(dict)
 
     def __init__(self, calibration_coeff: dict, frequencies, thread_timeout, logger_):
         QtCore.QThread.__init__(self)
@@ -127,6 +128,8 @@ class TCPTread(QtCore.QThread):
             self.send_cmd_for_fpvScope_thresholds()
             self.msleep(100)
             self.send_cmd_to_receive_detect_settings()
+            self.msleep(100)
+            self.send_cmd_for_shift_angles()
         except Exception as e:
             self.logger.error(f'Can\'t connect to {ip_address}:{port}')
 
@@ -219,6 +222,15 @@ class TCPTread(QtCore.QThread):
             self.logger.info(f'Command {command} to receive detect settings was sent.')
         except Exception as e:
             self.logger.error(f'Error with sending command to receive detect settings.')
+        self.msleep(100)
+
+    def send_cmd_for_shift_angles(self):
+        try:
+            command = b'\x0a\x0d\xa2\x00'
+            self.client.send(command)
+            self.logger.info(f'Command {command} to receive peleng shift angles was sent.')
+        except Exception as e:
+            self.logger.error(f'Error with sending command to receive peleng shift angles.')
         self.msleep(100)
 
     def send_detect_settings(self):
@@ -398,6 +410,20 @@ class TCPTread(QtCore.QThread):
         except Exception as e:
             self.logger.error(f'Error with sending FPV Scope threshold! {e}')
 
+    def send_peleng_shift_angles(self, new_angles: dict):
+        try:
+            sender = b'\x0a'
+            receiver = b'\x0d'
+            code = b'\xa2'
+            length = b'\x02'
+            angle_2G4 = new_angles['2400'].to_bytes(1, 'little')
+            angle_5G8 = new_angles['5800'].to_bytes(1, 'little')
+            command = sender + receiver + code + length + angle_2G4 + angle_5G8
+            self.client.send(command)
+            self.logger.info(f'New peleng shift angles were sent: {new_angles}')
+        except Exception as e:
+            self.logger.error(f'Error with sending new peleng shift angles! {e}')
+
     def handle_data_packet(self):
         type_of_packet = int.from_bytes(self.recv_exact(1), 'little')
         sector_number = int.from_bytes(self.recv_exact(1), 'little')
@@ -538,6 +564,22 @@ class TCPTread(QtCore.QThread):
         except Exception as e:
             self.logger.error(f'Error with receive FPV Scope thresholds! {e}')
 
+    def handle_peleng_shift_angles(self):
+        try:
+            length = int.from_bytes(self.recv_exact(1), 'little')
+            print(f'length = {length}')
+            if length == 2:
+                shift_angles = list(self.recv_exact(length))
+                shift_angles_dict = {'2400': shift_angles[0], '5800': shift_angles[1]}
+                self.logger.info(f'Received peleng shift angles: {shift_angles_dict}')
+                self.signal_peleng_shift_angles.emit(shift_angles_dict)
+            elif length == 1:
+                self.logger.info(f'Peleng shift angles were set successful!')
+            else:
+                self.logger.error(f'Unknown response length from setting peleng shift angles!')
+        except Exception as e:
+            self.logger.error(f'Error with receive peleng shift angles! {e}')
+
     def recv_exact(self, n):
         data = b''
         while len(data) < n:
@@ -585,6 +627,8 @@ class TCPTread(QtCore.QThread):
                                 self.handle_calibr_coeff()
                             elif cmd == b'\xae':
                                 self.handle_fpvScope_threshold()
+                            elif cmd == b'\xa2':
+                                self.handle_peleng_shift_angles()
                             else:
                                 self.logger.warning(f'Received unknown code: {cmd.hex()}')
                     except Exception as e:

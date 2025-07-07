@@ -25,25 +25,25 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 from submodules.database_logging import DataBaseLog
 
 
-for handler_id in list(logger._core.handlers.keys()):
-    logger.remove(handler_id)
-log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
-# logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
-logger.add("application_logs/file_{time}.log",
-           level="TRACE",
-           format=log_format,
-           colorize=False,
-           backtrace=True,
-           diagnose=True,
-           rotation='10 MB',
-           retention='14 days',
-           enqueue=True)
+# for handler_id in list(logger._core.handlers.keys()):
+#     logger.remove(handler_id)
+# log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
+# # logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
+# logger.add("application_logs/file_{time}.log",
+#            level="TRACE",
+#            format=log_format,
+#            colorize=False,
+#            backtrace=True,
+#            diagnose=True,
+#            rotation='10 MB',
+#            retention='14 days',
+#            enqueue=True)
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.27.1')
+        self.setWindowTitle('Shapel v25.28.1')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -82,6 +82,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.init_recordCalibrationWidget()
         if self.settingsConfiguration_status:
             self.init_settingsConfiguration()
+        if self.settingsAdminWidget_status:
+            self.init_settingsAdminWidget()
         self.init_dataBase_logging()
 
         self.connection = None
@@ -98,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fpvScopeWidget_status = bool(self.settingsWidget.conf['widgets']['fpvScopeWidget'])
         self.recordCalibrationWidget_status = bool(self.settingsWidget.conf['widgets']['recordCalibrationWidget'])
         self.settingsConfiguration_status = bool(self.settingsWidget.conf['widgets']['settingsConfiguration'])
+        self.settingsAdminWidget_status = bool(self.settingsWidget.conf['widgets']['settingsAdministrator'])
 
     def create_actions(self):
         self.act_start = QAction(self.tr('Start'))
@@ -202,6 +205,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_settingsConfiguration(self):
         self.settingsWidget.tabWidget.addTab(self.settingsWidget.configuration, self.tr('Configuration'))
+
+    def init_settingsAdminWidget(self):
+        self.settingsWidget.tabWidget.addTab(self.settingsWidget.administrator, self.tr('Administrator'))
 
     def init_dataBase_logging(self):
         self.DataBaseLog = DataBaseLog()
@@ -327,6 +333,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.connection.signal_new_calibr_coeff.connect(self.processor.update_calibration_coeff)
         self.connection.signal_fpvScope_thresholds.connect(self.fpvScopeWidget.update_thresholds)
+        self.connection.signal_peleng_shift_angles.connect(self.processor.change_shift_angle)
 
         # Calibration coefficients signal for TCP connection
         self.connection.signal_calibration.connect(self.dronesWidget.set_calibration)
@@ -368,6 +375,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settingsWidget.configuration.btn_read_controller.clicked.connect(
                 lambda: self.connection.send_cmd_for_change_mode(CtrlMode.frequencies, type='freq'))
             self.settingsWidget.configuration.signal_freq_to_controller.connect(self.connection.send_new_freq_to_controller)
+
+        if self.settingsAdminWidget_status:
+            self.settingsWidget.administrator.signal_peleng_shift_angles.connect(self.connection.send_peleng_shift_angles)
+            self.connection.signal_peleng_shift_angles.connect(self.settingsWidget.administrator.set_current_angles)
 
     def change_threshold(self, value):
         self.slider_threshold.setValue(value)

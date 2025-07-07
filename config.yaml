@@ -47,6 +47,7 @@ widgets:
   recordCalibrationWidget: false
   settingsDebug: false
   settingsConfiguration: false
+  settingsAdministrator: true
 configuration:
   frequencies:
     DJI_Mavic2_2_4:

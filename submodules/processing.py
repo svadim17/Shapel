@@ -45,6 +45,7 @@ class Processor(QtCore.QObject):
         self.no_warning_counter = 0
         self.no_warning_comparator = 50    # counter comparing with comparator to refresh buttons colors
 
+
     def change_average_flag(self, state: bool):
         self.averaging_levels_flag = state
 
@@ -54,9 +55,9 @@ class Processor(QtCore.QObject):
         self.threshold = self.config['threshold']
         self.calibr_coeff = self.config['calibration_coefficients']
         self.a_24 = self.config['peleng_coefficients'][24]['a']
-        self.b_24 = self.config['peleng_coefficients'][24]['b']
         self.a_58 = self.config['peleng_coefficients'][58]['a']
-        self.b_58 = self.config['peleng_coefficients'][58]['b']
+        self.shift_angle_2G4 = self.config['peleng_coefficients'][24]['b']
+        self.shift_angle_5G8 = self.config['peleng_coefficients'][58]['b']
         self.averaging_levels_flag = self.config['debug']['average_levels_for_peleng']
         self.sensivity_coeff = self.config['sensivity_coeff']
         # self.calibration_time = self.config['debug']['calibration_time']
@@ -111,6 +112,10 @@ class Processor(QtCore.QObject):
     def send_calibration_coeff(self):
         self.sig_calibration_coeff.emit(self.extra_auto_gains)
         self.logger.info(f'Calibration extra gains were sent')
+
+    def change_shift_angle(self, new_angles: dict):
+        self.shift_angle_2G4 = new_angles['2400']
+        self.shift_angle_5G8 = new_angles['5800']
 
     def find_sectors_for_peleng(self) -> list[Data_for_peleng]:
         max_signals = []
@@ -187,9 +192,9 @@ class Processor(QtCore.QObject):
             denominator = value_left + value_right
             if denominator != 0:
                 if 2400 == self.drons[i].frequency:
-                        mini_angle = numerator / denominator * self.a_24
+                        mini_angle = numerator / denominator * self.a_24 - self.shift_angle_2G4
                 elif 5800 == self.drons[i].frequency:
-                        mini_angle = numerator / denominator * self.a_58
+                        mini_angle = numerator / denominator * self.a_58 - self.shift_angle_5G8
                 else:
                     # вызывается деление на 0, когда диапазон неизвестен
                     self.logger.error(f'Unknown frequency for calculate peleng!')
@@ -202,7 +207,6 @@ class Processor(QtCore.QObject):
             elif mini_angle > 30:
                 mini_angle = 30
 
-            mini_angle -= self.b_24
             angle = antenna_left * 360 / self.sectors - self.deviation/2 + mini_angle
             power = value_left + value_right
 
@@ -311,31 +315,6 @@ class Processor(QtCore.QObject):
         elif self.receive_counter == self.numb_of_auto_receives:
             self.fit_signals_to_threshold()
             self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
-
-    # @pyqtSlot(Packet_levels)
-    # def receive_levels(self, packet: Packet_levels):
-    #     if self.record_flag:
-    #         self.data_log(packet)
-    #     norm_lvls = self.normalize_levels(packet)
-    #     ampl_lvls = self.amplifying_levels(copy.deepcopy(norm_lvls))
-    #
-    #     self.auto_calibration(ampl_levels=ampl_lvls.values)     # calibration
-    #     self.sig_sector_levels.emit(Sector_levels(ampl_lvls.antenna, self.drones_name, self.colors, ampl_lvls.values))
-    #     self.average_levels(ampl_lvls)
-    #
-    #     # Process pelengs
-    #     if ampl_lvls.antenna == self.sectors:
-    #         pelengs = self.calculate_peleng(self.find_sectors_for_peleng())
-    #         if self.averaging_pelengs_flag:
-    #             average_pelengs = self.average_pelengs(pelengs)
-    #             self.sig_peleng.emit(average_pelengs)
-    #             self.filter_pelengs(average_pelengs)
-    #         else:
-    #             self.sig_peleng.emit(pelengs)
-    #             self.filter_pelengs(pelengs)
-    #     else:
-    #         pelengs = []
-    #     self.sig_norm_levels_and_pelengs.emit(norm_lvls, pelengs)
 
     @pyqtSlot(Packet_levels)
     def receive_levels(self, packet: Packet_levels):

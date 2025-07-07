@@ -60,6 +60,10 @@ class SettingsWidget(QWidget):
         if self.conf['widgets']['settingsConfiguration']:
             self.configuration = ConfigurationWidget(configuration_conf=self.configuration_conf, logger_=self.logger)
 
+        if self.conf['widgets']['settingsAdministrator']:
+            self.administrator = AdminSettings(logger_=self.logger)
+
+
     def add_buttons_to_layout(self):
         btns_layout = QHBoxLayout()
         btns_layout.addWidget(self.btn_dump_gains_conf)
@@ -716,6 +720,94 @@ class DataBaseWidget(QWidget):
         item = QTableWidgetItem(text)
         item.setTextAlignment(Qt.AlignCenter)
         return item
+
+
+class AdminSettings(QWidget):
+    signal_peleng_shift_angles = pyqtSignal(dict)
+
+    def __init__(self, logger_):
+        super().__init__()
+        self.logger = logger_
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self.setLayout(self.main_layout)
+
+        self.create_widgets()
+        self.add_widgets_to_layout()
+
+    def create_widgets(self):
+        self.box_shift_angle = QGroupBox(self.tr('Peleng shift angle'))
+
+        self.box_2G4 = QGroupBox(self.tr('2.4 GHz'))
+        self.l_current_angle_2G4 = QLabel(self.tr('Current angle'))
+        self.spb_current_angle_2G4 = QSpinBox()
+        self.spb_current_angle_2G4.setReadOnly(True)
+        self.l_new_angle_2G4 = QLabel(self.tr('New angle'))
+        self.spb_new_angle_2G4 = QSpinBox()
+        self.spb_new_angle_2G4.setRange(-30, 30)
+        self.spb_new_angle_2G4.setSingleStep(1)
+        self.spb_new_angle_2G4.setValue(0)
+
+        self.box_5G8 = QGroupBox(self.tr('5.8 GHz'))
+        self.l_current_angle_5G8 = QLabel(self.tr('Current angle'))
+        self.spb_current_angle_5G8 = QSpinBox()
+        self.spb_current_angle_5G8.setReadOnly(True)
+        self.l_new_angle_5G8 = QLabel(self.tr('New angle'))
+        self.spb_new_angle_5G8 = QSpinBox()
+        self.spb_new_angle_5G8.setRange(-30, 30)
+        self.spb_new_angle_5G8.setSingleStep(1)
+        self.spb_new_angle_5G8.setValue(0)
+
+        self.btn_set_new_angle = QPushButton(self.tr('Set new angle'))
+        self.btn_set_new_angle.clicked.connect(self.btn_set_new_angle_clicked)
+
+    def add_widgets_to_layout(self):
+        box_correct_angle_layout_2G4 = QVBoxLayout()
+        cur_angle_layout_2G4 = QHBoxLayout()
+        cur_angle_layout_2G4.addWidget(self.l_current_angle_2G4)
+        cur_angle_layout_2G4.addSpacing(20)
+        cur_angle_layout_2G4.addWidget(self.spb_current_angle_2G4, alignment=Qt.AlignRight)
+        new_angle_layout_2G4 = QHBoxLayout()
+        new_angle_layout_2G4.addWidget(self.l_new_angle_2G4)
+        new_angle_layout_2G4.addSpacing(20)
+        new_angle_layout_2G4.addWidget(self.spb_new_angle_2G4, alignment=Qt.AlignRight)
+        box_correct_angle_layout_2G4.addLayout(cur_angle_layout_2G4)
+        box_correct_angle_layout_2G4.addSpacing(10)
+        box_correct_angle_layout_2G4.addLayout(new_angle_layout_2G4)
+        self.box_2G4.setLayout(box_correct_angle_layout_2G4)
+
+        box_correct_angle_layout_5G8 = QVBoxLayout()
+        cur_angle_layout_5G8 = QHBoxLayout()
+        cur_angle_layout_5G8.addWidget(self.l_current_angle_5G8)
+        cur_angle_layout_5G8.addSpacing(20)
+        cur_angle_layout_5G8.addWidget(self.spb_current_angle_5G8, alignment=Qt.AlignRight)
+        new_angle_layout_5G8 = QHBoxLayout()
+        new_angle_layout_5G8.addWidget(self.l_new_angle_5G8)
+        new_angle_layout_5G8.addSpacing(20)
+        new_angle_layout_5G8.addWidget(self.spb_new_angle_5G8, alignment=Qt.AlignRight)
+        box_correct_angle_layout_5G8.addLayout(cur_angle_layout_5G8)
+        box_correct_angle_layout_5G8.addSpacing(10)
+        box_correct_angle_layout_5G8.addLayout(new_angle_layout_5G8)
+        self.box_5G8.setLayout(box_correct_angle_layout_5G8)
+
+        boxes_2G4_5G8 = QHBoxLayout()
+        boxes_2G4_5G8.addWidget(self.box_2G4)
+        boxes_2G4_5G8.addWidget(self.box_5G8)
+
+        box_shift_angle_layout = QVBoxLayout()
+        box_shift_angle_layout.addLayout(boxes_2G4_5G8)
+        box_shift_angle_layout.addWidget(self.btn_set_new_angle)
+        self.box_shift_angle.setLayout(box_shift_angle_layout)
+
+        self.main_layout.addWidget(self.box_shift_angle)
+
+    def set_current_angles(self, new_angles: dict):
+        self.spb_current_angle_2G4.setValue(new_angles['2400'])
+        self.spb_current_angle_5G8.setValue(new_angles['5800'])
+
+    def btn_set_new_angle_clicked(self):
+        dict_to_send = {'2400': self.spb_new_angle_2G4.value(), '5800': self.spb_new_angle_5G8.value()}
+        self.signal_peleng_shift_angles.emit(dict_to_send)
 
 
 if __name__ == '__main__':
