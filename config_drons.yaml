@@ -148,8 +148,8 @@ Xiaomi_5_8:
   - 6
   - 6
   color:
-  - 255
-  - 255
+  - 0
+  - 170
   - 255
   frequency: 5800
 MavicMini_5_8:
@@ -162,7 +162,7 @@ MavicMini_5_8:
   - 6
   - 6
   color:
-  - 98
-  - 160
-  - 234
+  - 255
+  - 255
+  - 127
   frequency: 5800

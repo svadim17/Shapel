@@ -54,7 +54,7 @@ class TCPTread(QtCore.QThread):
     signal_calibration = QtCore.pyqtSignal(list)
     signal_drons_gains = QtCore.pyqtSignal(list)
     signal_fpvScope_packet = QtCore.pyqtSignal(dict)
-    signal_fpvData_packet = QtCore.pyqtSignal(list)
+    signal_fpvData_packet = QtCore.pyqtSignal(dict)
     signal_success_change_ip = QtCore.pyqtSignal(bool)
     signal_new_calibr_coeff = QtCore.pyqtSignal(dict)
     signal_fpvScope_thresholds = QtCore.pyqtSignal(list, str)
@@ -416,8 +416,8 @@ class TCPTread(QtCore.QThread):
             receiver = b'\x0d'
             code = b'\xa2'
             length = b'\x02'
-            angle_2G4 = new_angles['2400'].to_bytes(1, 'little')
-            angle_5G8 = new_angles['5800'].to_bytes(1, 'little')
+            angle_2G4 = new_angles['2400'].to_bytes(1, 'little', signed=True)
+            angle_5G8 = new_angles['5800'].to_bytes(1, 'little', signed=True)
             command = sender + receiver + code + length + angle_2G4 + angle_5G8
             self.client.send(command)
             self.logger.info(f'New peleng shift angles were sent: {new_angles}')
@@ -463,20 +463,17 @@ class TCPTread(QtCore.QThread):
 
     def handle_fpv_data(self):
         try:
-            # self.logger.info('Reading FPV data.')
-
             data_length = int.from_bytes(self.recv_exact(1), 'little')
             all_fpv_data = self.recv_exact(data_length)
 
             # Unpack data
-            fpv_data = []
+            fpv_data = {}
             offset = 0
-            while offset + 5 <= len(all_fpv_data):          # 5 bytes for sector(1), ADC(2) and dispersion(2)
+            while offset + 2 <= len(all_fpv_data):          # 5 bytes for sector(1), ADC(2) and dispersion(2)
                 sector = all_fpv_data[offset]
-                average_ADC_value = int.from_bytes(all_fpv_data[offset + 1:offset + 3], 'little')
-                dispersion = int.from_bytes(all_fpv_data[offset + 3:offset + 5], 'little')
-                fpv_data.append({'sector': sector, 'average_ADC_value': average_ADC_value, 'dispersion': dispersion})
-                offset += 5
+                average_ADC_value = int.from_bytes(all_fpv_data[offset + 1:offset + 2], 'little')
+                fpv_data.update({sector: average_ADC_value})
+                offset += 2
 
             self.signal_fpvData_packet.emit(fpv_data)
             # print(f'FPV Data packet: {fpv_data}')
@@ -567,10 +564,10 @@ class TCPTread(QtCore.QThread):
     def handle_peleng_shift_angles(self):
         try:
             length = int.from_bytes(self.recv_exact(1), 'little')
-            print(f'length = {length}')
             if length == 2:
-                shift_angles = list(self.recv_exact(length))
-                shift_angles_dict = {'2400': shift_angles[0], '5800': shift_angles[1]}
+                shift_angles = self.recv_exact(length)
+                shift_angles_dict = {'2400': int.from_bytes(shift_angles[0:1], 'little', signed=True),
+                                     '5800': int.from_bytes(shift_angles[1:2], 'little', signed=True)}
                 self.logger.info(f'Received peleng shift angles: {shift_angles_dict}')
                 self.signal_peleng_shift_angles.emit(shift_angles_dict)
             elif length == 1:

@@ -43,7 +43,7 @@ from submodules.database_logging import DataBaseLog
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.28.1')
+        self.setWindowTitle('Shapel v25.28.4')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -170,6 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pelengWidget = PelengWidget(self.settingsWidget.conf, self.settingsWidget.conf_drons, self.logger)
         self.pelengWidget.change_view_levels_flag(self.settingsWidget.debug.chb_peleng_level.checkState())
         self.processor.sig_peleng.connect(self.pelengWidget.draw_peleng)
+        self.processor.sig_fpvPeleng.connect(self.pelengWidget.draw_fpvPeleng)
         # self.processor.sig_warning.connect(self.pelengWidget.change_background_color)
         self.settingsWidget.debug.chb_average_peleng.clicked.connect(self.processor.change_average_flag)
         self.slider_threshold.valueChanged.connect(self.pelengWidget.change_threshold)
@@ -298,6 +299,7 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             self.logger.error(f'Error with open {mode} connection: {e}')
         self.connection.signal_levels.connect(self.processor.receive_levels)
+        self.connection.signal_fpvData_packet.connect(self.processor.receive_fpvData)
 
     def change_connection_state(self, status: bool):
         if status:
@@ -378,6 +380,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if self.settingsAdminWidget_status:
             self.settingsWidget.administrator.signal_peleng_shift_angles.connect(self.connection.send_peleng_shift_angles)
+            self.settingsWidget.administrator.signal_peleng_shift_angles.connect(self.processor.change_shift_angle)
             self.connection.signal_peleng_shift_angles.connect(self.settingsWidget.administrator.set_current_angles)
 
     def change_threshold(self, value):

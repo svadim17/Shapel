@@ -1,9 +1,9 @@
 language: ru
 connection:
-  timeout: 20
+  timeout: 10
   ip_address: 192.168.150.196
   port_numb: '55555'
-threshold: 3132
+threshold: 2311
 number_of_sectors: 6
 calibration_coefficients:
   2400:

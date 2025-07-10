@@ -1,9 +1,11 @@
+import math
+
 import pyqtgraph as pg
 import numpy as np
 from submodules import basic
 from PyQt5 import Qt, QtGui
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsEllipseItem, QVBoxLayout, QGraphicsPathItem
+from PyQt5.QtWidgets import QGraphicsEllipseItem, QVBoxLayout, QGraphicsPathItem, QGraphicsLineItem
 from PyQt5.QtWidgets import QDockWidget, QWidget
 from PyQt5.QtGui import QColor, QPen, QPainterPath
 from pyqtgraph import TextItem
@@ -38,6 +40,7 @@ class PelengWidget(QDockWidget, QWidget):
         self.threshold = None
         self.sectors = 6
         self.deviation = 8          # deviation of peleng and the width of peleng segment
+        self.fpv_deviation = 4
 
         self.load_conf(config)
         self.load_conf_drons(drons_config)
@@ -52,6 +55,7 @@ class PelengWidget(QDockWidget, QWidget):
         self.max_signals = {}
         self.peleng_line = [None] * self.number_of_drons
         self.peleng = [None] * self.number_of_drons
+        self.fpv_peleng_line = None
         self.peleng_power = [None] * self.number_of_drons
         self.values_max_with_gain = [0] * self.number_of_drons
         self.values_nearest_max_with_gain = [0] * self.number_of_drons
@@ -253,6 +257,30 @@ class PelengWidget(QDockWidget, QWidget):
                     self.highlight_on_sector(sector)
                 else:
                     self.highlight_off_sector(sector)
+
+    def draw_fpvPeleng(self, peleng: dict):
+        angle, value = peleng['angle'], peleng['value']
+        if isnan(angle):  # check if peleng is NaN
+            self.logger.warning(f"Skipping FPV peleng due to NaN angle")
+            return
+
+        if self.fpv_peleng_line:
+            self.plot.removeItem(self.fpv_peleng_line)
+
+        power = value / 100 * self.radar_radius
+        # power = 90 / 100 * self.radar_radius      # for test high value
+
+        start_angle = int(angle - 90 - 30)  # -90 для ориентации вверх, -30 для выравнивания
+        self.fpv_peleng_line = QGraphicsEllipseItem(-power, -power, power * 2, power * 2)
+        self.fpv_peleng_line.setStartAngle(start_angle * 16)
+        self.fpv_peleng_line.setSpanAngle(self.fpv_deviation * 16)  # 1° спан — почти линия
+
+        pen = QPen(QColor(0, 0, 0), 3, Qt.SolidLine)  # красный, чтобы отличался
+        self.fpv_peleng_line.setPen(pen)
+        self.fpv_peleng_line.setBrush(QColor(38, 162, 105))  # или Qt.NoBrush, если нужна только линия
+
+        self.fpv_peleng_line.setZValue(10)  # выше других
+        self.plot.addItem(self.fpv_peleng_line)
 
     def change_threshold(self, value: int):
         self.plot.removeItem(self.thr_circle)  # Remove threshold circle

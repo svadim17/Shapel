@@ -22,6 +22,7 @@ class Processor(QtCore.QObject):
     sig_drons_config_changed = pyqtSignal(dict)
     sig_norm_levels_and_pelengs = pyqtSignal(Packet_levels, list)
     sig_exceeded_sectors = pyqtSignal(list)
+    sig_fpvPeleng = pyqtSignal(dict)
 
     def __init__(self, config: dict, dron_config: dict, logger_):
         super().__init__()
@@ -32,6 +33,7 @@ class Processor(QtCore.QObject):
         self.full_pack_2D = np.zeros((self.sectors, self.number_of_drons), dtype=np.int32)
         self.last_pelens = None
         self.deviation = 8              # WARNING (NEED TO TEST) !!!!!!!!!!!!!!!!!
+        self.fpv_deviation = 4
         self.flag_warning = 0
         self.averaging_levels_flag = True
         self.averaging_pelengs_flag = False
@@ -192,9 +194,9 @@ class Processor(QtCore.QObject):
             denominator = value_left + value_right
             if denominator != 0:
                 if 2400 == self.drons[i].frequency:
-                        mini_angle = numerator / denominator * self.a_24 - self.shift_angle_2G4
+                        mini_angle = numerator / denominator * self.a_24 + self.shift_angle_2G4
                 elif 5800 == self.drons[i].frequency:
-                        mini_angle = numerator / denominator * self.a_58 - self.shift_angle_5G8
+                        mini_angle = numerator / denominator * self.a_58 + self.shift_angle_5G8
                 else:
                     # вызывается деление на 0, когда диапазон неизвестен
                     self.logger.error(f'Unknown frequency for calculate peleng!')
@@ -315,6 +317,66 @@ class Processor(QtCore.QObject):
         elif self.receive_counter == self.numb_of_auto_receives:
             self.fit_signals_to_threshold()
             self.receive_counter = self.numb_of_auto_receives + 6666          # for turn off accumulation
+
+    def find_sectors_for_fpvPeleng(self, data: dict):
+        ''' Поиск максимального значения и соседнего от него и их антенн '''
+        max_ADC, max_nearest_ADC = 0, 0
+        max_ADC_antenna, max_nearest_ADC_antenna = -1, -1
+
+        # Find max value and sector
+        for sector, ADC in data.items():
+            if ADC > max_ADC:
+                max_ADC = ADC
+                max_ADC_antenna = int(sector)
+
+        # Find the nearest sectors
+        left = (max_ADC_antenna - 2) % self.sectors + 1
+        right = max_ADC_antenna % self.sectors + 1
+        for neighbor in [left, right]:
+            neighbor_ADC = data.get(neighbor, 0)
+            if neighbor_ADC > max_nearest_ADC:
+                max_nearest_ADC = neighbor_ADC
+                max_nearest_ADC_antenna = neighbor
+
+        return {'max_ADC_antenna': max_ADC_antenna, 'max_ADC': max_ADC,
+                'max_nearest_ADC_antenna': max_nearest_ADC_antenna, 'max_nearest_ADC': max_nearest_ADC}
+
+    def calculate_fpvPeleng(self, max_ADC_dict: dict):
+        ''' Рассчет угла FPV пеленга для отрисовки '''
+        main_antenna, nearest_antenna = max_ADC_dict['max_ADC_antenna'], max_ADC_dict['max_nearest_ADC_antenna']
+        main_value, nearest_value = max_ADC_dict['max_ADC'], max_ADC_dict['max_nearest_ADC']
+
+        if (main_antenna == self.sectors and nearest_antenna == 1) or (main_antenna < nearest_antenna):
+            value_right = nearest_value
+            value_left = main_value
+            antenna_right = nearest_antenna
+            antenna_left = main_antenna
+        else:
+            value_right = main_value
+            value_left = nearest_value
+            antenna_right = main_antenna
+            antenna_left = nearest_antenna
+
+        mini_angle = 0
+        numerator = value_right - value_left
+        denominator = value_left + value_right
+        if denominator != 0:
+            mini_angle = numerator / denominator * self.a_58 + self.shift_angle_5G8
+        else:
+            pass
+            # self.logger.trace(f'Can`t calculate angle for {self.drons[i].name} due to zero denominator')
+        if mini_angle < -30:
+            mini_angle = -30
+        elif mini_angle > 30:
+            mini_angle = 30
+
+        angle = antenna_left * 360 / self.sectors - self.fpv_deviation / 2 + mini_angle
+        return {'angle': angle, 'value': main_value}
+
+    def receive_fpvData(self, data: dict):
+        max_ADC_dict = self.find_sectors_for_fpvPeleng(data)
+        peleng = self.calculate_fpvPeleng(max_ADC_dict)
+        self.sig_fpvPeleng.emit(peleng)
 
     @pyqtSlot(Packet_levels)
     def receive_levels(self, packet: Packet_levels):
