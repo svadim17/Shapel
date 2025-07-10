@@ -266,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.fpvScopeSettingsWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             self.fpvScopeSettingsWidget.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
-            self.fpvScopeSettingsWidget.setMaximumHeight(100)
+            self.fpvScopeSettingsWidget.setMaximumHeight(150)
             self.addDockWidget(Qt.LeftDockWidgetArea, self.fpvScopeSettingsWidget)
             if self.fpvVideoWidget_status:
                 self.splitDockWidget(self.fpvVideoWidget, self.fpvScopeSettingsWidget, Qt.Vertical)

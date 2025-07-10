@@ -2,6 +2,39 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en" sourcelanguage="en">
 <context>
+    <name>AdminSettings</name>
+    <message>
+        <location filename="../submodules/settings.py" line="739"/>
+        <source>Peleng shift angle</source>
+        <translation>Peleng shift angle</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="741"/>
+        <source>2.4 GHz</source>
+        <translation>2.4 GHz</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="752"/>
+        <source>Current angle</source>
+        <translation>Current angle</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="755"/>
+        <source>New angle</source>
+        <translation>New angle</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="751"/>
+        <source>5.8 GHz</source>
+        <translation>5.8 GHz</translation>
+    </message>
+    <message>
+        <location filename="../submodules/settings.py" line="761"/>
+        <source>Set new angle</source>
+        <translation>Set new angle</translation>
+    </message>
+</context>
+<context>
     <name>CalibrationWindow</name>
     <message>
         <location filename="../submodules/calibration.py" line="11"/>
@@ -50,67 +83,67 @@
 <context>
     <name>ConnectionSettingsWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="133"/>
+        <location filename="../submodules/settings.py" line="137"/>
         <source>Timeout</source>
         <translation>Timeout</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="138"/>
+        <location filename="../submodules/settings.py" line="142"/>
         <source>TCP (remote control)</source>
         <translation>TCP (remote control)</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="139"/>
+        <location filename="../submodules/settings.py" line="143"/>
         <source>IP address</source>
         <translation>IP address</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="141"/>
+        <location filename="../submodules/settings.py" line="145"/>
         <source>Port number</source>
         <translation>Port number</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="144"/>
+        <location filename="../submodules/settings.py" line="148"/>
         <source>Check TCP</source>
         <translation>Check TCP</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="149"/>
+        <location filename="../submodules/settings.py" line="153"/>
         <source>Detect config</source>
         <translation>Detect config</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="150"/>
+        <location filename="../submodules/settings.py" line="154"/>
         <source>Send config</source>
         <translation>Send config</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="151"/>
+        <location filename="../submodules/settings.py" line="155"/>
         <source>Receive config</source>
         <translation>Receive config</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="153"/>
+        <location filename="../submodules/settings.py" line="157"/>
         <source>Camera device</source>
         <translation>Camera device</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="160"/>
+        <location filename="../submodules/settings.py" line="164"/>
         <source>Change IP address</source>
         <translation>Change IP address</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="162"/>
+        <location filename="../submodules/settings.py" line="166"/>
         <source>Enter new IP address</source>
         <translation>Enter new IP address</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="164"/>
+        <location filename="../submodules/settings.py" line="168"/>
         <source>Enter new port</source>
         <translation>Enter new port</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="165"/>
+        <location filename="../submodules/settings.py" line="169"/>
         <source>Change</source>
         <translation>Change</translation>
     </message>
@@ -171,52 +204,52 @@
 <context>
     <name>DebugWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="303"/>
+        <location filename="../submodules/settings.py" line="307"/>
         <source>Connection</source>
         <translation>Connection</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="304"/>
+        <location filename="../submodules/settings.py" line="308"/>
         <source>Connection type</source>
         <translation>Connection type</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="307"/>
+        <location filename="../submodules/settings.py" line="311"/>
         <source>Record for &apos;player&apos;</source>
         <translation>Record for &apos;player&apos;</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="312"/>
+        <location filename="../submodules/settings.py" line="316"/>
         <source>Sound</source>
         <translation>Sound</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="334"/>
+        <location filename="../submodules/settings.py" line="338"/>
         <source>Other</source>
         <translation>Other</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="335"/>
+        <location filename="../submodules/settings.py" line="339"/>
         <source>Consider signal levels in Peleng</source>
         <translation>Consider signal levels in Peleng</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="337"/>
+        <location filename="../submodules/settings.py" line="341"/>
         <source>Average pelengs</source>
         <translation>Average pelengs</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="339"/>
+        <location filename="../submodules/settings.py" line="343"/>
         <source>Average spectrum</source>
         <translation>Average spectrum</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="315"/>
+        <location filename="../submodules/settings.py" line="319"/>
         <source>Digital channel</source>
         <translation>Digital channel</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="325"/>
+        <location filename="../submodules/settings.py" line="329"/>
         <source>Analog channel</source>
         <translation>Analog channel</translation>
     </message>
@@ -290,27 +323,27 @@
         <translation>Detected FPV</translation>
     </message>
     <message>
-        <location filename="../submodules/select_fpv_scope_mode.py" line="27"/>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="28"/>
         <source>Increase threshold</source>
         <translation>Increase threshold</translation>
     </message>
     <message>
-        <location filename="../submodules/select_fpv_scope_mode.py" line="33"/>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="34"/>
         <source>Continue scanning</source>
         <translation>Continue scanning</translation>
     </message>
     <message>
-        <location filename="../submodules/select_fpv_scope_mode.py" line="39"/>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="40"/>
         <source>Manual channels settings</source>
         <translation>Manual channels settings</translation>
     </message>
     <message>
-        <location filename="../submodules/select_fpv_scope_mode.py" line="65"/>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="66"/>
         <source>{remaining}...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../submodules/select_fpv_scope_mode.py" line="93"/>
+        <location filename="../submodules/select_fpv_scope_mode.py" line="94"/>
         <source>{self.wait_time}...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -323,32 +356,32 @@
         <translation>FPV Scope</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="73"/>
+        <location filename="../submodules/fpv_scope.py" line="74"/>
         <source>Frequencies</source>
         <translation>Frequencies</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="76"/>
+        <location filename="../submodules/fpv_scope.py" line="77"/>
         <source>Frequency (MHz)</source>
         <translation>Frequency (MHz)</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="142"/>
+        <location filename="../submodules/fpv_scope.py" line="143"/>
         <source>Threshold</source>
         <translation>Threshold</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="143"/>
+        <location filename="../submodules/fpv_scope.py" line="144"/>
         <source>FPV Coeff</source>
         <translation>FPV Coeff</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="144"/>
+        <location filename="../submodules/fpv_scope.py" line="145"/>
         <source>RSSI</source>
         <translation>RSSI</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope.py" line="147"/>
+        <location filename="../submodules/fpv_scope.py" line="148"/>
         <source>Auto threshold</source>
         <translation>Auto threshold</translation>
     </message>
@@ -364,27 +397,27 @@
 <context>
     <name>FpvScopeSettings</name>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="14"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="13"/>
         <source>FPV Scope settings</source>
         <translation>FPV Scope settings</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="27"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="26"/>
         <source>Auto mode</source>
         <translation>Auto mode</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="29"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="28"/>
         <source>Manual mode</source>
         <translation>Manual mode</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="34"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="33"/>
         <source>Current frequency</source>
         <translation>Current frequency</translation>
     </message>
     <message>
-        <location filename="../submodules/fpv_scope_settings.py" line="40"/>
+        <location filename="../submodules/fpv_scope_settings.py" line="39"/>
         <source>Delay on max [s]</source>
         <translation>Delay on max [s]</translation>
     </message>
@@ -392,35 +425,40 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main.py" line="103"/>
+        <location filename="../main.py" line="106"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../main.py" line="108"/>
+        <location filename="../main.py" line="111"/>
         <source>Settings</source>
         <translation>Settings</translation>
     </message>
     <message>
-        <location filename="../main.py" line="117"/>
+        <location filename="../main.py" line="120"/>
         <source>Sound</source>
         <translation>Sound</translation>
     </message>
     <message>
-        <location filename="../main.py" line="123"/>
+        <location filename="../main.py" line="126"/>
         <source>Toolbar</source>
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location filename="../main.py" line="204"/>
+        <location filename="../main.py" line="208"/>
         <source>Configuration</source>
         <translation>Configuration</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="211"/>
+        <source>Administrator</source>
+        <translation>Administrator</translation>
     </message>
 </context>
 <context>
     <name>PelengWidget</name>
     <message>
-        <location filename="../submodules/peleng.py" line="18"/>
+        <location filename="../submodules/peleng.py" line="20"/>
         <source>Peleng</source>
         <translation>Peleng</translation>
     </message>

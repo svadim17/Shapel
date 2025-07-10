@@ -10,7 +10,6 @@ class FpvScopeSettings(QDockWidget, QWidget):
     def __init__(self, logger_):
         super().__init__()
         self.logger = logger_
-
         self.setWindowTitle(self.tr('FPV Scope settings'))
         self.setWidget(QWidget())
 
