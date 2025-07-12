@@ -25,25 +25,25 @@ from submodules.connection import (EmulationTread, TCPTread, PlayerTread, CtrlMo
 from submodules.database_logging import DataBaseLog
 
 
-# for handler_id in list(logger._core.handlers.keys()):
-#     logger.remove(handler_id)
-# log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
-# # logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
-# logger.add("application_logs/file_{time}.log",
-#            level="TRACE",
-#            format=log_format,
-#            colorize=False,
-#            backtrace=True,
-#            diagnose=True,
-#            rotation='10 MB',
-#            retention='14 days',
-#            enqueue=True)
+for handler_id in list(logger._core.handlers.keys()):
+    logger.remove(handler_id)
+log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | {extra} | <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>")
+# logger.add(sys.stderr, format=log_format, colorize=True, backtrace=True, diagnose=True)
+logger.add("application_logs/file_{time}.log",
+           level="TRACE",
+           format=log_format,
+           colorize=False,
+           backtrace=True,
+           diagnose=True,
+           rotation='10 MB',
+           retention='14 days',
+           enqueue=True)
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.28.4')
+        self.setWindowTitle('Shapel v25.28.6')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 

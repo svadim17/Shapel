@@ -3,6 +3,7 @@ connection:
   timeout: 10
   ip_address: 192.168.150.196
   port_numb: '55555'
+  default_camera: AV TO USB2.0
 threshold: 2311
 number_of_sectors: 6
 calibration_coefficients:
@@ -41,7 +42,7 @@ data_char:
   accumulated_values: 400
 sensivity_coeff: 0.3
 widgets:
-  levelWidget: true
+  levelWidget: false
   fpvVideoWidget: true
   fpvScopeWidget: true
   recordCalibrationWidget: false

@@ -36,7 +36,7 @@ class SettingsWidget(QWidget):
         self.tabWidget = QTabWidget()
         self.main_layout.addWidget(self.tabWidget)
 
-        self.connection = ConnectionSettingsWidget(logger_=self.logger)
+        self.connection = ConnectionSettingsWidget(logger_=self.logger, default_camera=self.conf['connection']['default_camera'])
         self.tabWidget.addTab(self.connection, self.tr('Connection'))
         self.debug = DebugWidget(logger_=self.logger)
         if self.conf['widgets']['settingsDebug']:
@@ -123,9 +123,10 @@ class SettingsWidget(QWidget):
 
 class ConnectionSettingsWidget(QWidget):
 
-    def __init__(self, logger_):
+    def __init__(self, logger_, default_camera):
         super().__init__()
         self.logger = logger_
+        self.default_camera = default_camera
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.main_layout)
@@ -158,8 +159,13 @@ class ConnectionSettingsWidget(QWidget):
         self.cb_camera = QComboBox()
         self.cb_camera.setFixedWidth(250)
         available_cameras = QCameraInfo.availableCameras()
-        for cam in available_cameras:
-            self.cb_camera.addItem(str(cam.description()), cam)
+        preferred_index = 0
+        for index, cam in enumerate(available_cameras):
+            description = str(cam.description())
+            self.cb_camera.addItem(description, cam)
+            if self.default_camera in description:
+                preferred_index = index
+        self.cb_camera.setCurrentIndex(preferred_index)
 
         self.box_change_ip = QGroupBox(self.tr('Change IP address'))
         self.le_new_ip = QLineEdit()
@@ -274,7 +280,8 @@ class ConnectionSettingsWidget(QWidget):
     def collect_conf(self):
         connection_conf = {'connection': {'timeout': self.spb_timeout.value(),
                                           'ip_address': self.le_ip_address.text(),
-                                           'port_numb': self.le_port_numb.text()}}
+                                          'port_numb': self.le_port_numb.text(),
+                                          'default_camera': self.cb_camera.currentText()}}
         return connection_conf
 
     def set_conf(self, conf: dict):
