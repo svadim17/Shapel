@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTabWidget, QVBoxLayout, QHBoxLayout, QLabel, QCombo
     QGridLayout, QSlider, QPushButton, QDoubleSpinBox, QSpacerItem, QSizePolicy, QAbstractSpinBox, QCheckBox, \
     QSpinBox, QTableWidget, QTableWidgetItem, QCalendarWidget, QWidget, QGroupBox, QLineEdit, QHeaderView, \
     QAbstractItemView
-from PyQt5.QtGui import QIcon, QPixmap, QColor, QRegularExpressionValidator
+from PyQt5.QtGui import QIcon, QPixmap, QColor, QRegularExpressionValidator, QIntValidator
 from submodules.connection import *
 from PyQt5.QtCore import Qt, pyqtSignal, QThread, QSize, QRegularExpression
 import os
@@ -147,6 +147,8 @@ class ConnectionSettingsWidget(QWidget):
         self.le_ip_address.setValidator(ip_validator)
         self.l_port_numb = QLabel(self.tr('Port number'))
         self.le_port_numb = QLineEdit()
+        port_validator = QIntValidator(0, 65535, self.le_port_numb)
+        self.le_port_numb.setValidator(port_validator)
         self.le_port_numb.setText('55555')
         self.btn_check_tcp_connection = QPushButton(self.tr('Check TCP'))
         self.btn_check_tcp_connection.clicked.connect(self.btn_check_tcp_clicked)
@@ -171,8 +173,10 @@ class ConnectionSettingsWidget(QWidget):
 
         self.box_change_ip = QGroupBox(self.tr('Change IP address'))
         self.le_new_ip = QLineEdit()
+        self.le_new_ip.setValidator(ip_validator)
         self.le_new_ip.setPlaceholderText(self.tr('Enter new IP address'))
         self.le_new_port = QLineEdit()
+        self.le_new_port.setValidator(port_validator)
         self.le_new_port.setPlaceholderText(self.tr('Enter new port'))
         self.btn_change_ip = QPushButton(self.tr('Change'))
 
