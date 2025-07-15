@@ -4,32 +4,32 @@
 <context>
     <name>AdminSettings</name>
     <message>
-        <location filename="../submodules/settings.py" line="739"/>
+        <location filename="../submodules/settings.py" line="748"/>
         <source>Peleng shift angle</source>
         <translation>Угол сдвига пеленга</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="741"/>
+        <location filename="../submodules/settings.py" line="750"/>
         <source>2.4 GHz</source>
         <translation>2.4 ГГц</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="752"/>
+        <location filename="../submodules/settings.py" line="761"/>
         <source>Current angle</source>
         <translation>Текущий угол</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="755"/>
+        <location filename="../submodules/settings.py" line="764"/>
         <source>New angle</source>
         <translation>Новый угол</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="751"/>
+        <location filename="../submodules/settings.py" line="760"/>
         <source>5.8 GHz</source>
         <translation>5.8 ГГц</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="761"/>
+        <location filename="../submodules/settings.py" line="770"/>
         <source>Set new angle</source>
         <translation>Установить новый угол</translation>
     </message>
@@ -55,27 +55,27 @@
 <context>
     <name>ConfigurationWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="481"/>
+        <location filename="../submodules/settings.py" line="490"/>
         <source>Frequency settings</source>
         <translation>Настройки частот</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="483"/>
+        <location filename="../submodules/settings.py" line="492"/>
         <source>Read from file</source>
         <translation>Читать из файла</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="487"/>
+        <location filename="../submodules/settings.py" line="496"/>
         <source>Read from controller</source>
         <translation>Читать из контроллера</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="490"/>
+        <location filename="../submodules/settings.py" line="499"/>
         <source>Write to file</source>
         <translation>Записать в файл</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="494"/>
+        <location filename="../submodules/settings.py" line="503"/>
         <source>Write to controller</source>
         <translation>Записать в контроллер</translation>
     </message>
@@ -98,52 +98,52 @@
         <translation>IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="145"/>
+        <location filename="../submodules/settings.py" line="148"/>
         <source>Port number</source>
         <translation>Номер порта</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="148"/>
+        <location filename="../submodules/settings.py" line="151"/>
         <source>Check TCP</source>
         <translation>Проверить TCP</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="153"/>
+        <location filename="../submodules/settings.py" line="156"/>
         <source>Detect config</source>
         <translation>Конфиг обнаружения</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="154"/>
+        <location filename="../submodules/settings.py" line="157"/>
         <source>Send config</source>
         <translation>Отправить конфиг</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="155"/>
+        <location filename="../submodules/settings.py" line="158"/>
         <source>Receive config</source>
         <translation>Получить конфиг</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="157"/>
+        <location filename="../submodules/settings.py" line="160"/>
         <source>Camera device</source>
         <translation>Камера</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="164"/>
+        <location filename="../submodules/settings.py" line="172"/>
         <source>Change IP address</source>
         <translation>Изменить IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="166"/>
+        <location filename="../submodules/settings.py" line="174"/>
         <source>Enter new IP address</source>
         <translation>Введите новый IP адрес</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="168"/>
+        <location filename="../submodules/settings.py" line="176"/>
         <source>Enter new port</source>
         <translation>Введите новый порт</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="169"/>
+        <location filename="../submodules/settings.py" line="177"/>
         <source>Change</source>
         <translation>Изменить</translation>
     </message>
@@ -151,52 +151,52 @@
 <context>
     <name>DataBaseWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="634"/>
+        <location filename="../submodules/settings.py" line="643"/>
         <source>Time, hour</source>
         <translation>Время, час</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="644"/>
+        <location filename="../submodules/settings.py" line="653"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="650"/>
+        <location filename="../submodules/settings.py" line="659"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="650"/>
+        <location filename="../submodules/settings.py" line="659"/>
         <source>Time</source>
         <translation>Время</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="650"/>
+        <location filename="../submodules/settings.py" line="659"/>
         <source>Drone</source>
         <translation>Дрон</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="650"/>
+        <location filename="../submodules/settings.py" line="659"/>
         <source>Angle</source>
         <translation>Угол</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="703"/>
+        <location filename="../submodules/settings.py" line="712"/>
         <source>No</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="703"/>
+        <location filename="../submodules/settings.py" line="712"/>
         <source>warnings</source>
         <translation>обнаружений</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="703"/>
+        <location filename="../submodules/settings.py" line="712"/>
         <source>at this</source>
         <translation>в это</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="703"/>
+        <location filename="../submodules/settings.py" line="712"/>
         <source>time!</source>
         <translation>время!</translation>
     </message>
@@ -204,52 +204,52 @@
 <context>
     <name>DebugWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="307"/>
+        <location filename="../submodules/settings.py" line="316"/>
         <source>Connection</source>
         <translation>Соединение</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="308"/>
+        <location filename="../submodules/settings.py" line="317"/>
         <source>Connection type</source>
         <translation>Тип соединения</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="311"/>
+        <location filename="../submodules/settings.py" line="320"/>
         <source>Record for &apos;player&apos;</source>
         <translation>Запись для &apos;player&apos;</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="316"/>
+        <location filename="../submodules/settings.py" line="325"/>
         <source>Sound</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="338"/>
+        <location filename="../submodules/settings.py" line="347"/>
         <source>Other</source>
         <translation>Другое</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="339"/>
+        <location filename="../submodules/settings.py" line="348"/>
         <source>Consider signal levels in Peleng</source>
         <translation>Учитывать уровни сигналов в Пеленге</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="341"/>
+        <location filename="../submodules/settings.py" line="350"/>
         <source>Average pelengs</source>
         <translation>Усреднение пеленгов</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="343"/>
+        <location filename="../submodules/settings.py" line="352"/>
         <source>Average spectrum</source>
         <translation>Усреднение спектра</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="319"/>
+        <location filename="../submodules/settings.py" line="328"/>
         <source>Digital channel</source>
         <translation>Цифвровой канал</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="329"/>
+        <location filename="../submodules/settings.py" line="338"/>
         <source>Analog channel</source>
         <translation>Аналоговый канал</translation>
     </message>
@@ -425,34 +425,39 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main.py" line="106"/>
+        <location filename="../main.py" line="107"/>
         <source>Start</source>
         <translation>Старт</translation>
     </message>
     <message>
-        <location filename="../main.py" line="111"/>
+        <location filename="../main.py" line="112"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../main.py" line="120"/>
+        <location filename="../main.py" line="121"/>
         <source>Sound</source>
         <translation>Звук</translation>
     </message>
     <message>
-        <location filename="../main.py" line="126"/>
+        <location filename="../main.py" line="131"/>
         <source>Toolbar</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../main.py" line="208"/>
+        <location filename="../main.py" line="214"/>
         <source>Configuration</source>
         <translation>Конфигурация</translation>
     </message>
     <message>
-        <location filename="../main.py" line="211"/>
+        <location filename="../main.py" line="217"/>
         <source>Administrator</source>
         <translation>Администратор</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="126"/>
+        <source>Screenshot</source>
+        <translation>Скриншот</translation>
     </message>
 </context>
 <context>
@@ -572,37 +577,32 @@
 <context>
     <name>SettingsWidget</name>
     <message>
-        <location filename="../submodules/settings.py" line="31"/>
+        <location filename="../submodules/settings.py" line="30"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="40"/>
+        <location filename="../submodules/settings.py" line="39"/>
         <source>Connection</source>
         <translation>Соединение</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="43"/>
+        <location filename="../submodules/settings.py" line="42"/>
         <source>Debug</source>
         <translation>Отладка</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="45"/>
+        <location filename="../submodules/settings.py" line="44"/>
         <source>Save config</source>
-        <translation>Сохранить конфиг</translation>
+        <translation>Сохранить конфиг усилений</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="58"/>
+        <location filename="../submodules/settings.py" line="57"/>
         <source>Database</source>
         <translation>База данных</translation>
     </message>
     <message>
-        <location filename="../submodules/settings.py" line="44"/>
-        <source>Save gains config</source>
-        <translation type="obsolete">Сохранить конфиг усилений</translation>
-    </message>
-    <message>
-        <location filename="../submodules/settings.py" line="47"/>
+        <location filename="../submodules/settings.py" line="46"/>
         <source>Save gains</source>
         <translation>Сохранить усиления</translation>
     </message>
