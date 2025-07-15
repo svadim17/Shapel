@@ -157,6 +157,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.slider_threshold.setStyleSheet(slider_style)
         self.slider_threshold.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.btn_auto_threshold.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.btn_auto_threshold.setToolTip(self.tr('Calibration'))
 
         layout.addWidget(self.slider_threshold)
         layout.addWidget(self.btn_auto_threshold)

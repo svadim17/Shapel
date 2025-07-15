@@ -340,12 +340,12 @@
     <message>
         <location filename="../submodules/select_fpv_scope_mode.py" line="66"/>
         <source>{remaining}...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../submodules/select_fpv_scope_mode.py" line="94"/>
         <source>{self.wait_time}...</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -445,12 +445,12 @@
         <translation>Toolbar</translation>
     </message>
     <message>
-        <location filename="../main.py" line="214"/>
+        <location filename="../main.py" line="215"/>
         <source>Configuration</source>
         <translation>Configuration</translation>
     </message>
     <message>
-        <location filename="../main.py" line="217"/>
+        <location filename="../main.py" line="218"/>
         <source>Administrator</source>
         <translation>Administrator</translation>
     </message>
@@ -458,6 +458,11 @@
         <location filename="../main.py" line="126"/>
         <source>Screenshot</source>
         <translation>Screenshot</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="160"/>
+        <source>Calibration</source>
+        <translation>Calibration</translation>
     </message>
 </context>
 <context>
