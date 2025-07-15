@@ -5,16 +5,15 @@ from PyQt5.QtWidgets import QTabWidget, QVBoxLayout, QHBoxLayout, QLabel, QCombo
     QGridLayout, QSlider, QPushButton, QDoubleSpinBox, QSpacerItem, QSizePolicy, QAbstractSpinBox, QCheckBox, \
     QSpinBox, QTableWidget, QTableWidgetItem, QCalendarWidget, QWidget, QGroupBox, QLineEdit, QHeaderView, \
     QAbstractItemView
-from PyQt5.QtGui import QIcon, QPixmap, QColor
+from PyQt5.QtGui import QIcon, QPixmap, QColor, QRegularExpressionValidator
 from submodules.connection import *
-from PyQt5.QtCore import Qt, pyqtSignal, QThread, QSize
+from PyQt5.QtCore import Qt, pyqtSignal, QThread, QSize, QRegularExpression
 import os
 from os import walk
 from submodules.basic import Dron
 import subprocess
 import sys
 from PyQt5.QtMultimedia import QCameraInfo
-
 
 class SettingsWidget(QWidget):
     def __init__(self, logger_):
@@ -143,6 +142,9 @@ class ConnectionSettingsWidget(QWidget):
         self.box_tcp = QGroupBox(self.tr('TCP (remote control)'))
         self.l_ip_address = QLabel(self.tr('IP address'))
         self.le_ip_address = QLineEdit()
+        ip_regex = QRegularExpression(r'^(\d{1,3}\.){0,3}\d{0,3}$')
+        ip_validator = QRegularExpressionValidator(ip_regex, self.le_ip_address)
+        self.le_ip_address.setValidator(ip_validator)
         self.l_port_numb = QLabel(self.tr('Port number'))
         self.le_port_numb = QLineEdit()
         self.le_port_numb.setText('55555')

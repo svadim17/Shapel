@@ -1,3 +1,4 @@
+from datetime import datetime
 import queue
 import time
 import os
@@ -43,7 +44,7 @@ logger.add("application_logs/file_{time}.log",
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle('Shapel v25.28.6')
+        self.setWindowTitle('Shapel v25.29.2')
         self.setWindowIcon(QIcon('assets/logo/logo.jpeg'))
         self.logger = logger
 
@@ -120,7 +121,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.act_sound = QAction(self.tr('Sound'))
         self.act_sound.setIcon(QIcon(f'assets/icons/sound_on.png'))
         self.act_sound.setCheckable(True)
-        self.act_sound.triggered.connect(self.enable_sound)
+        self.act_sound.toggled.connect(self.enable_sound)
+
+        self.act_screenshot = QAction(self.tr('Screenshot'))
+        self.act_screenshot.setIcon(QIcon(f'assets/icons/camera.png'))
+        self.act_screenshot.triggered.connect(self.make_screenshot)
 
     def create_toolbar(self):
         self.toolBar = QToolBar(self.tr('Toolbar'))
@@ -130,6 +135,7 @@ class MainWindow(QtWidgets.QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.toolBar.addWidget(spacer)
         self.toolBar.addAction(self.act_sound)
+        self.toolBar.addAction(self.act_screenshot)
 
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
@@ -398,6 +404,18 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(1, 11):
             time.sleep(0.05)  # <-- эмулируем загрузку
             QApplication.processEvents()
+
+    def make_screenshot(self):
+        try:
+            save_dir = 'screenshots'
+            os.makedirs(save_dir, exist_ok=True)
+            cur_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filepath = os.path.join(save_dir, f"{cur_time}.png")
+            pixmap = self.grab()
+            pixmap.save(filepath, "png")
+            self.logger.success(f'Screenshot saved as {filepath}')
+        except Exception as e:
+            self.logger.error(f'Error with making screenshot: {e}')
 
 
 def load_translator(app, language):
